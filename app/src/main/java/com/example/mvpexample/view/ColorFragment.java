@@ -64,7 +64,7 @@ public class ColorFragment extends Fragment implements IColorView {
             public void onClick(View v) {
                 Log.d("CLICK", "Change Frag button pressed");
 
-                NavigatorClass.navigateTo(getActivity(), new StringFragment(), false); // ASK ASK ASK
+                NavigatorClass.navigateTo(getActivity(), new StringFragment(), false); // ASK
             }
         };
         btnChangeFrag.setOnClickListener(changeFragListener);

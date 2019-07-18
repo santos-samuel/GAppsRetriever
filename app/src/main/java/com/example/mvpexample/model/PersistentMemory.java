@@ -1,6 +1,6 @@
 package com.example.mvpexample.model;
 
-public class Cache {
+public class PersistentMemory {
 
     public static final int BLUE = -16776961;
     public static final int GREEN = -16711936;
