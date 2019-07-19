@@ -58,7 +58,7 @@ public class StringFragment extends Fragment implements IStringView {
             public void onClick(View v) {
                 Log.d("CLICK", "Change Frag button pressed");
 
-                NavigatorClass.navigateTo(getActivity(), new ColorFragment(), true); // ASK
+                presenter.changeFragment();
             }
         };
         btnChangeFrag.setOnClickListener(changeFragListener);

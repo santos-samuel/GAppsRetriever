@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.example.mvpexample.R;
-import com.example.mvpexample.model.NavigatorClass;
 import com.example.mvpexample.presenter.ColorPresenter;
 import com.example.mvpexample.presenter.IColorView;
 
@@ -62,9 +61,7 @@ public class ColorFragment extends Fragment implements IColorView {
         View.OnClickListener changeFragListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("CLICK", "Change Frag button pressed");
-
-                NavigatorClass.navigateTo(getActivity(), new StringFragment(), false); // ASK
+                presenter.changeFragment();
             }
         };
         btnChangeFrag.setOnClickListener(changeFragListener);

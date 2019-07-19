@@ -12,6 +12,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        NavigatorClass.navigateTo(this, new ColorFragment(), true);
+
+        new NavigatorClass(this); // init navigator with main activity
+        NavigatorClass.getInstance().navigateTo(new ColorFragment(), true);
     }
 }
