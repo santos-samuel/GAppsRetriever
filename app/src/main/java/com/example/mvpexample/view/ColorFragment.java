@@ -33,9 +33,11 @@ public class ColorFragment extends Fragment implements IColorView {
         Log.d("CREATED", "on view created");
         super.onViewCreated(view, savedInstanceState);
 
-        presenter = new ColorPresenter(this);
+        presenter = new ColorPresenter(this, ((MainActivity) getActivity()).getRequestManager(), ((MainActivity) getActivity()).getFragNavigator());
         btnChangeColor = view.findViewById(R.id.btnChangeColor);
         btnChangeFrag = view.findViewById(R.id.btnChangeFrag);
+
+        restoreColor();
 
         View.OnClickListener changeColorListener = new View.OnClickListener() {
             @Override
@@ -65,6 +67,10 @@ public class ColorFragment extends Fragment implements IColorView {
             }
         };
         btnChangeFrag.setOnClickListener(changeFragListener);
+    }
+
+    private void restoreColor() {
+        presenter.retrieveLastColor();
     }
 
     @Override

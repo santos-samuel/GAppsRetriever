@@ -1,18 +1,19 @@
 package com.example.mvpexample.presenter;
 
 import com.example.mvpexample.model.FragmentNavigator;
-import com.example.mvpexample.model.NavigatorClass;
 import com.example.mvpexample.model.RequestManager;
 import com.example.mvpexample.view.ColorFragment;
 
 public class StringPresenter {
 
     private IStringView view;
-    private RequestManager requestManager = new RequestManager();
-    private FragmentNavigator fragNavigator = NavigatorClass.getInstance();
+    private RequestManager requestManager;
+    private FragmentNavigator fragNavigator;
 
-    public StringPresenter(IStringView view) {
+    public StringPresenter(IStringView view, RequestManager requestManager, FragmentNavigator fragNavigator) {
         this.view = view;
+        this.requestManager = requestManager;
+        this.fragNavigator = fragNavigator;
     }
 
     public void changeString(String oldString) {
@@ -22,5 +23,9 @@ public class StringPresenter {
 
     public void changeFragment() {
         fragNavigator.navigateTo(new ColorFragment(), true);
+    }
+
+    public void retrieveLastString() {
+        view.updateViewString(requestManager.retrieveLastString());
     }
 }

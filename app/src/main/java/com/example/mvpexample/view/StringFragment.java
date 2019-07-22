@@ -10,9 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-
 import com.example.mvpexample.R;
-import com.example.mvpexample.model.NavigatorClass;
 import com.example.mvpexample.presenter.IStringView;
 import com.example.mvpexample.presenter.StringPresenter;
 
@@ -33,10 +31,12 @@ public class StringFragment extends Fragment implements IStringView {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        presenter = new StringPresenter(this);
+        presenter = new StringPresenter(this, ((MainActivity) getActivity()).getRequestManager(), ((MainActivity) getActivity()).getFragNavigator());
         textViewString = view.findViewById(R.id.textViewString);
         btnChangeString = view.findViewById(R.id.btnChangeString);
         btnChangeFrag = view.findViewById(R.id.btnChangeFrag);
+
+        restoreState();
 
         View.OnClickListener changeStringListener = new View.OnClickListener() {
             @Override
@@ -62,6 +62,10 @@ public class StringFragment extends Fragment implements IStringView {
             }
         };
         btnChangeFrag.setOnClickListener(changeFragListener);
+    }
+
+    private void restoreState() {
+        presenter.retrieveLastString();
     }
 
     @Override
