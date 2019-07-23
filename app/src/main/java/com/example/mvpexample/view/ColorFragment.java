@@ -21,6 +21,7 @@ public class ColorFragment extends Fragment implements IColorView {
     private ColorPresenter presenter;
     private Button btnChangeColor;
     private Button btnChangeFrag;
+    private Button btnGoToApkAnalyzer;
 
     @Nullable
     @Override
@@ -36,6 +37,7 @@ public class ColorFragment extends Fragment implements IColorView {
         presenter = new ColorPresenter(this, ((MainActivity) getActivity()).getRequestManager(), ((MainActivity) getActivity()).getFragNavigator());
         btnChangeColor = view.findViewById(R.id.btnChangeColor);
         btnChangeFrag = view.findViewById(R.id.btnChangeFrag);
+        btnGoToApkAnalyzer = view.findViewById(R.id.btnGoToApkAnalyzer);
 
         restoreColor();
 
@@ -51,9 +53,7 @@ public class ColorFragment extends Fragment implements IColorView {
                     Log.d("BACKGROUND", "background");
                 }
 
-                Log.d("COLOR OLD", String.valueOf(currentColor));
                 presenter.changeColor(currentColor);
-                Log.d("COLOR NEW", String.valueOf(currentColor));
             }
         };
         btnChangeColor.setOnClickListener(changeColorListener);
@@ -63,10 +63,18 @@ public class ColorFragment extends Fragment implements IColorView {
         View.OnClickListener changeFragListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                presenter.changeFragment();
+                presenter.changeFragment(new StringFragment());
             }
         };
         btnChangeFrag.setOnClickListener(changeFragListener);
+
+        View.OnClickListener goToApkAnalyzerListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                presenter.changeFragment(new ApkAnalyzerFragment());
+            }
+        };
+        btnGoToApkAnalyzer.setOnClickListener(goToApkAnalyzerListener);
     }
 
     private void restoreColor() {

@@ -18,4 +18,11 @@
         android:layout_height="wrap_content"
         android:text="Change Fragment"
         tools:text="Change Fragment" />
+
+    <Button
+        android:id="@+id/btnGoToApkAnalyzer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Go to ApkAnalyzer"
+        tools:text="Go to ApkAnalyzer" />
 </LinearLayout>

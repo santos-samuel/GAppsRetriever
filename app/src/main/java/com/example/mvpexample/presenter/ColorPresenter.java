@@ -1,8 +1,9 @@
 package com.example.mvpexample.presenter;
 
+import android.support.v4.app.Fragment;
+
 import com.example.mvpexample.model.FragmentNavigator;
 import com.example.mvpexample.model.RequestManager;
-import com.example.mvpexample.view.StringFragment;
 
 public class ColorPresenter {
 
@@ -21,8 +22,8 @@ public class ColorPresenter {
         view.updateViewColor(newColor);
     }
 
-    public void changeFragment() {
-        fragNavigator.navigateTo(new StringFragment(), false);
+    public void changeFragment(Fragment newFrag) {
+        fragNavigator.navigateTo(newFrag, false);
     }
 
     public void retrieveLastColor() {
