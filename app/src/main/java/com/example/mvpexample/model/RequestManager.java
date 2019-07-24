@@ -2,6 +2,7 @@ package com.example.mvpexample.model;
 
 import android.app.Activity;
 import android.app.DownloadManager;
+import android.app.Notification;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -12,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.OpenableColumns;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -156,12 +158,12 @@ public class RequestManager {
         */
 
 
-        File file = new File(mainActivity.getExternalFilesDir(null),"Dummy");
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"Dummy");
         /*
         Create a DownloadManager.Request with all the information necessary to start the download
          */
-        DownloadManager.Request request=new DownloadManager.Request(Uri.parse("https://perkhidmatan-google-play.en.aptoide.com/"))
-                .setTitle("Dummy File")// Title of the Download Notification
+        DownloadManager.Request request=new DownloadManager.Request(Uri.parse("https://unsplash.com/photos/dqy5wtCdS4U/download?force=true")) // just a test
+                .setTitle("File")// Title of the Download Notification
                 .setDescription("Downloading")// Description of the Download Notification
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)// Visibility of the download Notification
                 .setDestinationUri(Uri.fromFile(file))// Uri of the destination file
