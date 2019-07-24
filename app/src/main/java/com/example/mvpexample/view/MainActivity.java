@@ -26,6 +26,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        askForReadExternalStoragePermission();
+    }
+
+    private void askForReadExternalStoragePermission() {
         // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -55,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void init() {
         this.persistentMemory = new PersistentMemory();
-        this.requestManager = new RequestManager(persistentMemory, getPackageManager(), getContentResolver());
+        this.requestManager = new RequestManager(persistentMemory, getPackageManager(), getContentResolver(), this);
         this.fragNavigator = new FragmentNavigator(this); // init navigator with main activity
         this.fragNavigator.navigateTo(new ColorFragment(), true);
     }

@@ -19,12 +19,32 @@ public class ApkAnalyzerPresenter {
     public void processSelectedFile(Intent data) {
         Log.d("PROCESS", "File Selected");
 
-        Uri selectedFile = data.getData();
-        lastSelectedFileURI = selectedFile;
-        view.updateSelectedFile(selectedFile.getPath());
+        lastSelectedFileURI = data.getData();
+        view.updateSelectedFile(requestManager.getFileName(lastSelectedFileURI));
     }
 
     public void inspectApk() {
-        requestManager.doesThisAppRequireGooglePlayServices(lastSelectedFileURI);
+        boolean bool = false;
+        try {
+            bool = requestManager.doesThisAppRequireGooglePlayServices(lastSelectedFileURI);
+        } catch (Exception e) {
+            return;
+        }
+        String info;
+
+        if (bool)
+            info = "This app needs Google Play Services";
+        else
+            info = "This app does not need Google Play Services";
+
+        view.showIfAppNeedsGooglePlayServices(info, bool);
+    }
+
+    public void checkGPSAvailability() {
+        requestManager.checkIfGooglePlayServicesIsAvailable();
+    }
+
+    public void downloadGPSRequest() {
+        requestManager.downloadGooglePlayServices();
     }
 }

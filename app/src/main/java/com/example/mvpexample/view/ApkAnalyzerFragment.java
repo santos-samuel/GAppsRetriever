@@ -1,7 +1,6 @@
 package com.example.mvpexample.view;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -13,10 +12,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import com.example.mvpexample.R;
 import com.example.mvpexample.presenter.ApkAnalyzerPresenter;
 import com.example.mvpexample.presenter.IApkAnalyzerView;
+
 import static android.app.Activity.RESULT_OK;
 
 public class ApkAnalyzerFragment extends Fragment implements IApkAnalyzerView {
@@ -28,6 +27,10 @@ public class ApkAnalyzerFragment extends Fragment implements IApkAnalyzerView {
     private TextView txtViewSelectedFile;
     private Button btnInspectApk;
     private LinearLayout linearLayoutSelectedFile;
+    private TextView txtIfAppNeedsGPS;
+    private LinearLayout layoutIfAppNeedsGPS;
+    private Button btnCheckGPSAvailability;
+    private Button btnDownloadGooglePlayServices;
 
     @Nullable
     @Override
@@ -45,12 +48,17 @@ public class ApkAnalyzerFragment extends Fragment implements IApkAnalyzerView {
         txtViewSelectedFile = view.findViewById(R.id.txtViewSelectedFile);
         btnInspectApk = view.findViewById(R.id.btnInspectApk);
         linearLayoutSelectedFile = view.findViewById(R.id.linearLayoutSelectedFile);
+        txtIfAppNeedsGPS = view.findViewById(R.id.txtIfAppNeedsGPS);
+        layoutIfAppNeedsGPS = view.findViewById(R.id.layoutIfAppNeedsGPS);
+        btnCheckGPSAvailability = view.findViewById(R.id.btnCheckGPSAvailability);
+        btnDownloadGooglePlayServices = view.findViewById(R.id.btnDownloadGooglePlayServices);
 
         View.OnClickListener searchFileListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("application/vnd.android.package-archive");
+                //intent.setType("*/*");
                 startActivityForResult(intent,PICKAPK_RESULT_CODE);
             }
         };
@@ -64,6 +72,23 @@ public class ApkAnalyzerFragment extends Fragment implements IApkAnalyzerView {
             }
         };
         btnInspectApk.setOnClickListener(inspectApkListener);
+
+        View.OnClickListener checkGPSListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                presenter.checkGPSAvailability();
+            }
+        };
+        btnCheckGPSAvailability.setOnClickListener(checkGPSListener);
+
+
+        View.OnClickListener downloadGPSListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                presenter.downloadGPSRequest();
+            }
+        };
+        btnDownloadGooglePlayServices.setOnClickListener(downloadGPSListener);
     }
 
     @Override
@@ -81,5 +106,11 @@ public class ApkAnalyzerFragment extends Fragment implements IApkAnalyzerView {
     public void updateSelectedFile(String newFileName) {
         txtViewSelectedFile.setText(newFileName);
         linearLayoutSelectedFile.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void showIfAppNeedsGooglePlayServices(String info, boolean bool) {
+        txtIfAppNeedsGPS.setText(info);
+        layoutIfAppNeedsGPS.setVisibility(View.VISIBLE);
     }
 }
