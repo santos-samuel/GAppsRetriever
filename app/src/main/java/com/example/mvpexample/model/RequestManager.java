@@ -2,7 +2,6 @@ package com.example.mvpexample.model;
 
 import android.app.Activity;
 import android.app.DownloadManager;
-import android.app.Notification;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -10,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,20 +18,19 @@ import android.provider.OpenableColumns;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.Toast;
-
 import com.example.mvpexample.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-
 import java.io.File;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
+import java.util.List;
 
 import static android.content.Context.DOWNLOAD_SERVICE;
 
 public class RequestManager {
 
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 90;
+    private static final String GOOGLE_PLAY_SERVICES_LINK = "https://perkhidmatan-google-play.en.aptoide.com/";
     private final PackageManager packageManager;
     private final ContentResolver contentResolver;
     private final Activity mainActivity;
@@ -121,19 +120,31 @@ public class RequestManager {
         int resultCode = apiAvailability.isGooglePlayServicesAvailable(mainActivity);
 
         if (resultCode != ConnectionResult.SUCCESS) {
+            Log.d("CONNECTION RESULT", "" + resultCode);
+            switch (resultCode) {
+                case ConnectionResult.SERVICE_MISSING:
+                case ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED:
+                case ConnectionResult.SERVICE_INVALID:
+                    // install test apk
+                    File GPSApk = new File("/storage/sdcard0/Download/GooglePlayServices.apk");
+                    installAPK(GPSApk);
+                    break;
+                default:
+                    if (apiAvailability.isUserResolvableError(resultCode)) {
+                        apiAvailability.getErrorDialog(mainActivity, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST).show();
+                    }
 
-            if (apiAvailability.isUserResolvableError(resultCode)) {
-                apiAvailability.getErrorDialog(mainActivity, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST).show();
-            }
+                    else {
+                        AlertDialog alertDialog =
+                                new AlertDialog.Builder(mainActivity, R.style.Theme_AppCompat_Dialog).setMessage(
+                                        "This device is not supported.")
+                                        .create();
+                        alertDialog.show();
 
-            else {
-                AlertDialog alertDialog =
-                        new AlertDialog.Builder(mainActivity, R.style.Theme_AppCompat_Dialog).setMessage(
-                                "This device is not supported.")
-                                .create();
-                alertDialog.show();
+                        //cleanUpTheMess();
+                    }
+                    break;
 
-                //cleanUpTheMess();
             }
 
             return false;
@@ -147,9 +158,32 @@ public class RequestManager {
         return true;
     }
 
+    private void installAPK(File apkFile) {
+        Intent intent = new Intent("android.intent.action.VIEW");
+        intent.addCategory("android.intent.category.DEFAULT");
+        intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
+        mainActivity.startActivity(intent);
+    }
+
     public void downloadGooglePlayServices() {
+        // ------------------ OPEN MARKET SOLUTION ------------------
+        /*Intent goToMarket = new Intent(Intent.ACTION_VIEW)
+                .setData(Uri.parse(GOOGLE_PLAY_SERVICES_LINK));
+
+        // Verify it resolves
+        PackageManager packageManager = mainActivity.getPackageManager();
+        List<ResolveInfo> activities = packageManager.queryIntentActivities(goToMarket, 0);
+        boolean isIntentSafe = activities.size() > 0;
+        if (isIntentSafe)
+            mainActivity.startActivity(goToMarket);*/
+
+
+
+        // ------------------ DOWNLOAD MANAGER SOLUTION ------------------
+
         mainActivity.registerReceiver(onDownloadComplete,new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-        /*
+
+        /* TO DO
         @Override
         public void onDestroy() {
             super.onDestroy();
@@ -158,20 +192,20 @@ public class RequestManager {
         */
 
 
-        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"Dummy");
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"TEMP_Aptoide");
         /*
         Create a DownloadManager.Request with all the information necessary to start the download
          */
-        DownloadManager.Request request=new DownloadManager.Request(Uri.parse("https://unsplash.com/photos/dqy5wtCdS4U/download?force=true")) // just a test
+        DownloadManager.Request request=new DownloadManager.Request(Uri.parse(GOOGLE_PLAY_SERVICES_LINK))
                 .setTitle("File")// Title of the Download Notification
                 .setDescription("Downloading")// Description of the Download Notification
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)// Visibility of the download Notification
                 .setDestinationUri(Uri.fromFile(file))// Uri of the destination file
-                .setRequiresCharging(false)// Set if charging is required to begin the download
+                //.setRequiresCharging(false)// Set if charging is required to begin the download
                 .setAllowedOverMetered(true)// Set if download is allowed on Mobile network
                 .setAllowedOverRoaming(true);// Set if download is allowed on roaming network
         DownloadManager downloadManager= (DownloadManager) mainActivity.getSystemService(DOWNLOAD_SERVICE);
-        downloadID = downloadManager.enqueue(request);// enqueue puts the download request in the queue.
+        downloadID = downloadManager.enqueue(request);// enqueue puts the download request in the queue.*/
     }
 
 
