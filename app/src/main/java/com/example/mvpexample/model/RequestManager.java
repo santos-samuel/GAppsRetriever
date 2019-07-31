@@ -30,7 +30,7 @@ import static android.content.Context.DOWNLOAD_SERVICE;
 public class RequestManager {
 
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 90;
-    private static final String GOOGLE_PLAY_SERVICES_LINK = "https://perkhidmatan-google-play.en.aptoide.com/";
+    private static final String GOOGLE_PLAY_SERVICES_LINK_MARKET = "https://perkhidmatan-google-play.en.aptoide.com/";
     private final PackageManager packageManager;
     private final ContentResolver contentResolver;
     private final Activity mainActivity;
@@ -66,30 +66,35 @@ public class RequestManager {
         try {
             pathToApk = PathUtil.getPath(mainActivity.getApplicationContext(), apkURI, mainActivity.getContentResolver());
         } catch (URISyntaxException e) {
-            Log.d("TAG", "Something went very wrong while getting the path of the selected file");
+            Log.d("TAG", "Something went very wrong while getting the path of the selected file.");
             throw new Exception();
         }
 
-        PackageInfo info = packageManager.getPackageArchiveInfo(pathToApk, PackageManager.GET_META_DATA);
+        PackageInfo packageInfo = packageManager.getPackageArchiveInfo(pathToApk, PackageManager.GET_META_DATA);
 
-        if (info == null) {
-            throw new IllegalStateException("Extension APK could not be parsed");
+        if (packageInfo == null) {
+            throw new IllegalStateException("Extension APK could not be parsed.");
         }
 
-        Bundle metaData = info.applicationInfo.metaData;
+        return inspectApkManifest(packageInfo);
+    }
+
+    private boolean inspectApkManifest(PackageInfo packageInfo) {
+        Bundle metaData = packageInfo.applicationInfo.metaData;
         if (metaData == null)
             return false; // no metadata in the manifest -> no google gms value declared as well
 
         Object object = metaData.get("com.google.android.gms.version");
-        if (object == null)
-            return false; // no gms value declared
+        if (object != null)
+            return true;
 
+        /*
         if (object instanceof String)
             Log.d("GMS_METADATA_VALUE", metaData.getString("com.google.android.gms.version"));
         if (object instanceof Integer)
             Log.d("GMS_METADATA_VALUE", String.valueOf(metaData.getInt("com.google.android.gms.version")));
-
-        return true;
+        */
+        return false;
     }
 
     public String getFileName(Uri uri) {
@@ -125,23 +130,27 @@ public class RequestManager {
                 case ConnectionResult.SERVICE_MISSING:
                 case ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED:
                 case ConnectionResult.SERVICE_INVALID:
+                    AlertDialog alertDialog =
+                            new AlertDialog.Builder(mainActivity, R.style.Theme_AppCompat_Dialog).setMessage(
+                                    "GPS is not installed/updated/valid!")
+                                    .create();
+                    alertDialog.show();
                     // install test apk
-                    File GPSApk = new File("/storage/sdcard0/Download/GooglePlayServices.apk");
-                    installAPK(GPSApk);
+                    //File GPSApk = new File("/storage/sdcard0/Download/GooglePlayServices.apk");
+                    //installAPK(GPSApk);
                     break;
+
                 default:
                     if (apiAvailability.isUserResolvableError(resultCode)) {
                         apiAvailability.getErrorDialog(mainActivity, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST).show();
                     }
 
                     else {
-                        AlertDialog alertDialog =
+                        alertDialog =
                                 new AlertDialog.Builder(mainActivity, R.style.Theme_AppCompat_Dialog).setMessage(
                                         "This device is not supported.")
                                         .create();
                         alertDialog.show();
-
-                        //cleanUpTheMess();
                     }
                     break;
 
@@ -167,21 +176,21 @@ public class RequestManager {
 
     public void downloadGooglePlayServices() {
         // ------------------ OPEN MARKET SOLUTION ------------------
-        /*Intent goToMarket = new Intent(Intent.ACTION_VIEW)
-                .setData(Uri.parse(GOOGLE_PLAY_SERVICES_LINK));
+        Intent goToMarket = new Intent(Intent.ACTION_VIEW)
+                .setData(Uri.parse(GOOGLE_PLAY_SERVICES_LINK_MARKET));
 
         // Verify it resolves
         PackageManager packageManager = mainActivity.getPackageManager();
         List<ResolveInfo> activities = packageManager.queryIntentActivities(goToMarket, 0);
         boolean isIntentSafe = activities.size() > 0;
         if (isIntentSafe)
-            mainActivity.startActivity(goToMarket);*/
+            mainActivity.startActivity(goToMarket);
 
 
 
         // ------------------ DOWNLOAD MANAGER SOLUTION ------------------
 
-        mainActivity.registerReceiver(onDownloadComplete,new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+        //mainActivity.registerReceiver(onDownloadComplete,new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 
         /* TO DO
         @Override
@@ -192,11 +201,11 @@ public class RequestManager {
         */
 
 
-        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"TEMP_Aptoide");
+        //File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"TEMP_Aptoide");
         /*
         Create a DownloadManager.Request with all the information necessary to start the download
          */
-        DownloadManager.Request request=new DownloadManager.Request(Uri.parse(GOOGLE_PLAY_SERVICES_LINK))
+        /*DownloadManager.Request request=new DownloadManager.Request(Uri.parse(GOOGLE_PLAY_SERVICES_LINK))
                 .setTitle("File")// Title of the Download Notification
                 .setDescription("Downloading")// Description of the Download Notification
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)// Visibility of the download Notification
