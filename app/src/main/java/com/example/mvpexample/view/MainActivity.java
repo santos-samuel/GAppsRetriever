@@ -1,14 +1,19 @@
 package com.example.mvpexample.view;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
 import com.example.mvpexample.R;
+import com.example.mvpexample.model.AppListener;
 import com.example.mvpexample.model.FragmentNavigator;
 import com.example.mvpexample.model.PersistentMemory;
 import com.example.mvpexample.model.RequestManager;
@@ -21,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
     private FragmentNavigator fragNavigator;
     private RequestManager requestManager;
     private PersistentMemory persistentMemory;
+    private BroadcastReceiver appListener;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,11 +36,34 @@ public class MainActivity extends AppCompatActivity {
 
         askForReadExternalStoragePermission();
         askForWriteExternalStoragePermission();
+
         init();
     }
 
+
+    /*@Override
+    protected void onStart() {
+        super.onStart();
+
+        Log.d("START", "onStart()");
+        this.appListener = new AppListener(requestManager);
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
+        intentFilter.addAction(Intent.ACTION_PACKAGE_CHANGED);
+        intentFilter.addDataScheme("package");
+        registerReceiver(appListener, intentFilter);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        unregisterReceiver(appListener);
+    }*/
+
     private void askForWriteExternalStoragePermission() {
-        // Here, thisActivity is the current activity
+
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {

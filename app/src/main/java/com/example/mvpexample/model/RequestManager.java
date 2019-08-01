@@ -7,14 +7,18 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PermissionInfo;
 import android.content.pm.ResolveInfo;
+import android.content.pm.Signature;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.OpenableColumns;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.Toast;
@@ -30,7 +34,13 @@ import static android.content.Context.DOWNLOAD_SERVICE;
 public class RequestManager {
 
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 90;
+
+    private static final String GPS_FILE_NAME = "gps.apk";
+    private static final String PATH_TO_GPS_APK = Environment.getExternalStorageDirectory() + "/.aptoide/" + GPS_FILE_NAME;
+
     private static final String GOOGLE_PLAY_SERVICES_LINK_MARKET = "https://perkhidmatan-google-play.en.aptoide.com/";
+    private static final String GOOGLE_PLAY_SERVICES_LINK_DIRECT = "https://download.apkpure.com/b/apk/Y29tLmdvb2dsZS5hbmRyb2lkLmdtc18xODM4MjAyOF9hZTg5YjgzZQ?_fn=R29vZ2xlIFBsYXkgc2VydmljZXNfdjE4LjMuODIgKDA5MDQwMC0yNjAyNjQwMDIpX2Fwa3B1cmUuY29tLmFwaw&k=e6f6002f3e39774c80e3ae7c77ab455c5d45b84d&as=75e7570bd972a666a764b6cad0a944d15d4315c5&_p=Y29tLmdvb2dsZS5hbmRyb2lkLmdtcw&c=1%7CTOOLS%7CZGV2PUdvb2dsZSUyMExMQyZ0PWFwayZzPTU4NDU4MTE3JnZuPTE4LjMuODIlMjAoMDkwNDAwLTI2MDI2NDAwMikmdmM9MTgzODIwMjg&hot=1";
+
     private final PackageManager packageManager;
     private final ContentResolver contentResolver;
     private final Activity mainActivity;
@@ -70,31 +80,83 @@ public class RequestManager {
             throw new Exception();
         }
 
-        PackageInfo packageInfo = packageManager.getPackageArchiveInfo(pathToApk, PackageManager.GET_META_DATA);
-
-        if (packageInfo == null) {
-            throw new IllegalStateException("Extension APK could not be parsed.");
-        }
-
-        return inspectApkManifest(packageInfo);
+        return inspectApkManifest(pathToApk);
     }
 
-    private boolean inspectApkManifest(PackageInfo packageInfo) {
-        Bundle metaData = packageInfo.applicationInfo.metaData;
-        if (metaData == null)
-            return false; // no metadata in the manifest -> no google gms value declared as well
+    private boolean inspectApkManifest(String pathToApk) {
 
-        Object object = metaData.get("com.google.android.gms.version");
+        //--------------------------- META_DATA --------------------------------//
+        PackageInfo packageInfo = getPackageInfo(pathToApk, PackageManager.GET_META_DATA);
+        Bundle metaData = packageInfo.applicationInfo.metaData;
+
+        // LOCATION SERVICES
+        Object object = metaData.get("com.google.android.geo.API_KEY");
         if (object != null)
             return true;
 
-        /*
-        if (object instanceof String)
-            Log.d("GMS_METADATA_VALUE", metaData.getString("com.google.android.gms.version"));
-        if (object instanceof Integer)
-            Log.d("GMS_METADATA_VALUE", String.valueOf(metaData.getInt("com.google.android.gms.version")));
-        */
+
+        object = metaData.get("com.google.android.maps.v2.API_KEY");
+        if (object != null)
+            return true;
+
+
+        // WALLET SERVICES
+        object = metaData.get("com.google.android.gms.wallet.api.enabled");
+        if (object != null)
+            return true;
+
+
+        // GOOGLE NEARBY
+        object = metaData.get("com.google.android.nearby.messages.API_KEY");
+        if (object != null)
+            return true;
+
+
+        // SAFETY NET (SURE?)
+        object = metaData.get("com.google.android.safetynet.ATTEST_API_KEY");
+        if (object != null)
+            return true;
+
+
+        // GOOGLE PLAY GAMES SERVICE (maybe notify about needing both services)
+        object = metaData.get("com.google.android.gms.games.APP_ID");
+        if (object != null)
+            return true;
+
+
+        //--------------------------- ACTIVITIES --------------------------------//
+        packageInfo = getPackageInfo(pathToApk, PackageManager.GET_ACTIVITIES);
+
+        // AUTH SERVICE
+        ActivityInfo[] activities = packageInfo.activities;
+        for (ActivityInfo ai : activities) {
+            if (ai.name.equals("com.google.android.gms.auth.api.signin.internal.SignInHubActivity"))
+                return true;
+        }
+
+
+        //--------------------------- PERMISSIONS --------------------------------//
+        packageInfo = getPackageInfo(pathToApk, PackageManager.GET_PERMISSIONS);
+
+        // BILLING && READ_GSERVICES
+        String[] requestedPermissions = packageInfo.requestedPermissions;
+        for (String rp : requestedPermissions) {
+            if (rp.equals("com.android.vending.BILLING") || rp.equals("com.google.android.providers.gsf.permission.READ_GSERVICES"))
+                return true;
+        }
+
+
         return false;
+    }
+
+    private PackageInfo getPackageInfo(String pathToApk, int componentInfoConstant) {
+        PackageInfo packageArchiveInfo = packageManager.getPackageArchiveInfo(pathToApk, componentInfoConstant);
+
+        if (packageArchiveInfo == null) {
+            throw new IllegalStateException("Extension APK could not be parsed.");
+        }
+
+        return packageArchiveInfo;
     }
 
     public String getFileName(Uri uri) {
@@ -167,57 +229,15 @@ public class RequestManager {
         return true;
     }
 
-    private void installAPK(File apkFile) {
+    private void installAPK(String pathToApk) {
         Intent intent = new Intent("android.intent.action.VIEW");
         intent.addCategory("android.intent.category.DEFAULT");
-        intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
+
+        Uri apkURI = FileProvider.getUriForFile(mainActivity, mainActivity.getApplicationContext().getPackageName() + ".provider", new File(pathToApk));
+        intent.setDataAndType(apkURI, "application/vnd.android.package-archive");
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         mainActivity.startActivity(intent);
     }
-
-    public void downloadGooglePlayServices() {
-        // ------------------ OPEN MARKET SOLUTION ------------------
-        Intent goToMarket = new Intent(Intent.ACTION_VIEW)
-                .setData(Uri.parse(GOOGLE_PLAY_SERVICES_LINK_MARKET));
-
-        // Verify it resolves
-        PackageManager packageManager = mainActivity.getPackageManager();
-        List<ResolveInfo> activities = packageManager.queryIntentActivities(goToMarket, 0);
-        boolean isIntentSafe = activities.size() > 0;
-        if (isIntentSafe)
-            mainActivity.startActivity(goToMarket);
-
-
-
-        // ------------------ DOWNLOAD MANAGER SOLUTION ------------------
-
-        //mainActivity.registerReceiver(onDownloadComplete,new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-
-        /* TO DO
-        @Override
-        public void onDestroy() {
-            super.onDestroy();
-            unregisterReceiver(onDownloadComplete);
-        }
-        */
-
-
-        //File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"TEMP_Aptoide");
-        /*
-        Create a DownloadManager.Request with all the information necessary to start the download
-         */
-        /*DownloadManager.Request request=new DownloadManager.Request(Uri.parse(GOOGLE_PLAY_SERVICES_LINK))
-                .setTitle("File")// Title of the Download Notification
-                .setDescription("Downloading")// Description of the Download Notification
-                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)// Visibility of the download Notification
-                .setDestinationUri(Uri.fromFile(file))// Uri of the destination file
-                //.setRequiresCharging(false)// Set if charging is required to begin the download
-                .setAllowedOverMetered(true)// Set if download is allowed on Mobile network
-                .setAllowedOverRoaming(true);// Set if download is allowed on roaming network
-        DownloadManager downloadManager= (DownloadManager) mainActivity.getSystemService(DOWNLOAD_SERVICE);
-        downloadID = downloadManager.enqueue(request);// enqueue puts the download request in the queue.*/
-    }
-
-
 
     private long downloadID;
     private BroadcastReceiver onDownloadComplete = new BroadcastReceiver() {
@@ -227,8 +247,65 @@ public class RequestManager {
             long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
             //Checking if the received broadcast is for our enqueued download by matching download id
             if (downloadID == id) {
+                Log.d("DOWNLOAD", "Download GPS completed.");
                 Toast.makeText(mainActivity, "Download Completed", Toast.LENGTH_SHORT).show();
+                installAPK(PATH_TO_GPS_APK);
             }
+
+            //mainActivity.unregisterReceiver(onDownloadComplete); // Where should i put this?
         }
     };
+
+    public void downloadGooglePlayServicesMarket() {
+        Intent goToMarket = new Intent(Intent.ACTION_VIEW)
+                .setData(Uri.parse(GOOGLE_PLAY_SERVICES_LINK_MARKET));
+
+        // Verify it resolves
+        PackageManager packageManager = mainActivity.getPackageManager();
+        List<ResolveInfo> activities = packageManager.queryIntentActivities(goToMarket, 0);
+        boolean isIntentSafe = activities.size() > 0;
+        if (isIntentSafe)
+            mainActivity.startActivity(goToMarket);
+    }
+
+    public void downloadGooglePlayServicesDirect() {
+        Log.d("DOWNLOAD", "downloadGooglePlayServicesDirect");
+
+        mainActivity.registerReceiver(onDownloadComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+
+        File file = new File(PATH_TO_GPS_APK);
+
+        try {
+            if (file.exists()) {
+                Log.d("DELETE", "DELETED PREVIOUS FILE.");
+                file.delete();
+            }
+        } catch (Exception e) {
+            Log.d("DELETE", "Something went wrong while trying to delete previous file.");
+        }
+        /*
+        Create a DownloadManager.Request with all the information necessary to start the download
+         */
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(GOOGLE_PLAY_SERVICES_LINK_DIRECT))
+                .setTitle("Google Play Services")// Title of the Download Notification
+                .setDescription("Downloading")// Description of the Download Notification
+                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)// Visibility of the download Notification
+                .setDestinationUri(Uri.fromFile(file))// Uri of the destination file
+                //.setRequiresCharging(false)// Set if charging is required to begin the download
+                .setAllowedOverMetered(true)// Set if download is allowed on Mobile network
+                .setAllowedOverRoaming(true);// Set if download is allowed on roaming network
+        DownloadManager downloadManager= (DownloadManager) mainActivity.getSystemService(DOWNLOAD_SERVICE);
+        downloadID = downloadManager.enqueue(request);// enqueue puts the download request in the queue.
+    }
+
+
+    public void deleteApkFileOnStorage() {
+        File file = new File(PATH_TO_GPS_APK);
+        try {
+            file.delete();
+            Log.d("DELETE", "GPS.APK has been deleted!");
+        } catch (Exception e) {
+            Log.d("DELETE", "Something went wrong while trying to delete the apk downloaded file");
+        }
+    }
 }

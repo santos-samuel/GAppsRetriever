@@ -71,7 +71,7 @@ public class ColorFragment extends Fragment implements IColorView {
         View.OnClickListener goToApkAnalyzerListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                presenter.changeFragment(new SelectApkFragment());
+                presenter.changeFragment(new SelectAndInspectApkFragment());
             }
         };
         btnGoToApkAnalyzer.setOnClickListener(goToApkAnalyzerListener);

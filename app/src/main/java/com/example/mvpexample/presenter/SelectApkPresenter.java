@@ -4,20 +4,19 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
+
 import com.example.mvpexample.model.FragmentNavigator;
 import com.example.mvpexample.model.RequestManager;
-import com.example.mvpexample.view.SelectApkFragment;
 
 public class SelectApkPresenter {
 
-    private ISelectApkView view;
+    private ISelectAndInspectApkView view;
     private RequestManager requestManager;
     private Uri lastSelectedFileURI;
     FragmentNavigator fragNavigator;
     private String infoFromInspectApk;
 
-    public SelectApkPresenter(ISelectApkView view, RequestManager requestManager, FragmentNavigator fragNavigator) {
+    public SelectApkPresenter(ISelectAndInspectApkView view, RequestManager requestManager, FragmentNavigator fragNavigator) {
         this.view = view;
         this.requestManager = requestManager;
         this.fragNavigator = fragNavigator;

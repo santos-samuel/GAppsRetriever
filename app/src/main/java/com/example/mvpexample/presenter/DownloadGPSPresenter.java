@@ -12,7 +12,11 @@ public class DownloadGPSPresenter {
         this.view = view;
     }
 
-    public void downloadGPSRequest() {
-        requestManager.downloadGooglePlayServices();
+    public void downloadGPSRequestMarket() {
+        requestManager.downloadGooglePlayServicesMarket();
+    }
+
+    public void downloadGPSRequestDirect() {
+        requestManager.downloadGooglePlayServicesDirect();
     }
 }

@@ -5,8 +5,15 @@
     android:orientation="vertical">
 
     <Button
-        android:id="@+id/btnDownloadGPS"
+        android:id="@+id/btnDownloadGPSMarket"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Download GPS" />
+        android:text="Download GPS Market" />
+
+
+    <Button
+        android:id="@+id/btnDownloadGPSDirect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Download GPS Direct" />
 </LinearLayout>

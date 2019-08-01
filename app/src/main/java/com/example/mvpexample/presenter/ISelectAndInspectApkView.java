@@ -1,5 +1,5 @@
 package com.example.mvpexample.presenter;
 
-public interface ISelectApkView {
+public interface ISelectAndInspectApkView {
     void updateSelectedFile(String newFileName);
 }
