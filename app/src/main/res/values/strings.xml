@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">MVPExample</string>
+    <string name="cast_tracks_chooser_dialog_no">NO</string>
+    <string name="cast_tracks_chooser_dialog_yes">YES</string>
 </resources>

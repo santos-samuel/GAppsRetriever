@@ -11,7 +11,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-
 import com.example.mvpexample.R;
 import com.example.mvpexample.model.AppListener;
 import com.example.mvpexample.model.FragmentNavigator;
@@ -46,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
 
         Log.d("START", "onStart()");
-        this.appListener = new AppListener(requestManager, getPackageManager());
+        this.appListener = new AppListener(requestManager, this);
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_PACKAGE_ADDED);

@@ -8,12 +8,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.PermissionInfo;
 import android.content.pm.ResolveInfo;
-import android.content.pm.Signature;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -24,7 +21,6 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.Toast;
-
 import com.example.mvpexample.BuildConfig;
 import com.example.mvpexample.R;
 import com.google.android.gms.common.ConnectionResult;
@@ -252,7 +248,7 @@ public class RequestManager {
         return result;
     }
 
-    public boolean checkIfGooglePlayServicesIsAvailable() {
+    public boolean checkIfGooglePlayServicesIsAvailable() throws DeviceNotSupportedException {
         GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
         //int resultCode = apiAvailability.isGooglePlayServicesAvailable(mainActivity); //Returns status code indicating whether there was an error. Can be one of following in ConnectionResult: SUCCESS, SERVICE_MISSING, SERVICE_UPDATING, SERVICE_VERSION_UPDATE_REQUIRED, SERVICE_DISABLED, SERVICE_INVALID
         int resultCode = apiAvailability.isGooglePlayServicesAvailable(mainActivity);
@@ -263,14 +259,6 @@ public class RequestManager {
                 case ConnectionResult.SERVICE_MISSING:
                 case ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED:
                 case ConnectionResult.SERVICE_INVALID:
-                    AlertDialog alertDialog =
-                            new AlertDialog.Builder(mainActivity, R.style.Theme_AppCompat_Dialog).setMessage(
-                                    "GPS is not installed/updated/valid!")
-                                    .create();
-                    alertDialog.show();
-                    // install test apk
-                    //File GPSApk = new File("/storage/sdcard0/Download/GooglePlayServices.apk");
-                    //installAPK(GPSApk);
                     break;
 
                 default:
@@ -279,11 +267,7 @@ public class RequestManager {
                     }
 
                     else {
-                        alertDialog =
-                                new AlertDialog.Builder(mainActivity, R.style.Theme_AppCompat_Dialog).setMessage(
-                                        "This device is not supported.")
-                                        .create();
-                        alertDialog.show();
+                        throw new DeviceNotSupportedException();
                     }
                     break;
 
@@ -292,36 +276,11 @@ public class RequestManager {
             return false;
         }
 
-        AlertDialog alertDialog =
-                new AlertDialog.Builder(mainActivity, R.style.Theme_AppCompat_Dialog).setMessage(
-                        "Everything is ok!")
-                        .create();
-        alertDialog.show();
-
         return true;
     }
 
     private void installAPK(String pathToApk) {
         Log.d("TAG", "Install APK!");
-        /*Intent intent = new Intent("android.intent.action.VIEW");
-        intent.addCategory("android.intent.category.DEFAULT");
-
-        Uri apkURI = FileProvider.getUriForFile(mainActivity, mainActivity.getApplicationContext().getPackageName() + ".provider", new File(pathToApk));
-        intent.setDataAndType(apkURI, "application/vnd.android.package-archive");
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        mainActivity.startActivity(intent);*/
-
-        /*Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
-        Uri apkURI = FileProvider.getUriForFile(mainActivity, mainActivity.getApplicationContext().getPackageName() + ".provider", new File(pathToApk));
-        intent.setDataAndType(apkURI, "application/vnd.android.package-archive");
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        mainActivity.startActivity(intent);*/
-
-        /*Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(Uri.fromFile(new File(pathToApk)), "application/vnd.android.package-archive");
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        mainActivity.startActivity(intent);*/
-
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             Uri apkUri = FileProvider.getUriForFile(mainActivity, BuildConfig.APPLICATION_ID + ".provider", new File(pathToApk));

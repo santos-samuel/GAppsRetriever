@@ -1,23 +1,27 @@
 package com.example.mvpexample.model;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.Uri;
 import android.util.Log;
 
-import java.util.List;
+import com.example.mvpexample.R;
+import com.example.mvpexample.view.MainActivity;
 
 public class AppListener extends BroadcastReceiver {
 
     private final RequestManager requestManager;
-    private final PackageManager packageManager;
+    private final Activity mainActivity;
 
-    public AppListener(RequestManager requestManager, PackageManager packageManager) {
+    public AppListener(RequestManager requestManager, MainActivity mainActivity) {
         this.requestManager = requestManager;
-        this.packageManager = packageManager;
+        this.mainActivity = mainActivity;
     }
 
     @Override
@@ -29,15 +33,78 @@ public class AppListener extends BroadcastReceiver {
         String installedPackageName = installedApkUri.getEncodedSchemeSpecificPart();
 
         Log.d("INSTALLED APP", installedPackageName);
-        // assuming that it was this code that programatically downloaded and installed the GPS apk
+
         if (installedPackageName.equals("com.google.android.gms"))
             requestManager.deleteApkFileOnStorage();
 
         else { // A new app has been installed
             try {
-                requestManager.doesThisAppRequireGooglePlayServices(installedPackageName);
+                boolean gpsAvailable = requestManager.checkIfGooglePlayServicesIsAvailable();
+                if (!gpsAvailable) {
+                    boolean requiresGPS = requestManager.doesThisAppRequireGooglePlayServices(installedPackageName);
+
+                    if (requiresGPS) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+                        // Add the buttons
+                        builder.setPositiveButton(R.string.cast_tracks_chooser_dialog_yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                requestManager.downloadGooglePlayServicesMarket();
+                            }
+                        });
+                        builder.setNegativeButton(R.string.cast_tracks_chooser_dialog_no, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // User cancelled the dialog
+                            }
+                        });
+
+                        // Set other dialog properties
+                        builder.setTitle("Alert");
+                        builder.setMessage("The installed app contains features that may not " +
+                                "work unless you install/update Google Play Services App.\n" +
+                                "Do you want to install the latest version of Google Play Services?");
+
+                        builder.setIcon(R.drawable.aptoide_icon);
+
+                        // Create the AlertDialog
+                        final AlertDialog dialog = builder.create();
+
+                        //2. now setup to change color of the button
+                        dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+                            @Override
+                            public void onShow(DialogInterface arg0) {
+                                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.rgb(232, 106, 37));
+                                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.rgb(232, 106, 37));
+                            }
+                        });
+                        dialog.show();
+                    }
+                }
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
+            } catch (DeviceNotSupportedException e) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+                // Add the buttons
+                builder.setNeutralButton(R.string.cast_tracks_chooser_dialog_ok, null);
+
+                // Set other dialog properties
+                builder.setTitle("Alert");
+                builder.setMessage("The installed app contains features that may not " +
+                        "work without Google Play Services.\n" +
+                        "Unfortunately, this device does not support Google Play Services.");
+
+                builder.setIcon(R.drawable.aptoide_icon);
+
+                // Create the AlertDialog
+                final AlertDialog dialog = builder.create();
+
+                //2. now setup to change color of the button
+                dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+                    @Override
+                    public void onShow(DialogInterface arg0) {
+                        dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(Color.rgb(232, 106, 37));
+                    }
+                });
+                dialog.show();
             }
         }
     }
