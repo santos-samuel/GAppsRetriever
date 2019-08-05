@@ -256,20 +256,21 @@ public class RequestManager {
         if (resultCode != ConnectionResult.SUCCESS) {
             Log.d("CONNECTION RESULT", "" + resultCode);
             switch (resultCode) {
-                case ConnectionResult.SERVICE_MISSING:
-                case ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED:
-                case ConnectionResult.SERVICE_INVALID:
+                case ConnectionResult.SERVICE_MISSING:                  // 1
+                case ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED:  // 2
+                case ConnectionResult.SERVICE_INVALID:                  // 9
                     break;
 
                 default:
-                    if (apiAvailability.isUserResolvableError(resultCode)) {
+                    if (apiAvailability.isUserResolvableError(resultCode)) { // 3 (disabled) or 18 (updating)
                         apiAvailability.getErrorDialog(mainActivity, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST).show();
+                        return true; // TO DO
                     }
 
                     else {
                         throw new DeviceNotSupportedException();
                     }
-                    break;
+                    //break;
 
             }
 
