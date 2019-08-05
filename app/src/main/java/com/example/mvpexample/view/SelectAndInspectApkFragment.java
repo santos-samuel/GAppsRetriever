@@ -12,14 +12,14 @@ import android.widget.Button;
 import android.widget.TextView;
 import com.example.mvpexample.R;
 import com.example.mvpexample.presenter.ISelectAndInspectApkView;
-import com.example.mvpexample.presenter.SelectApkPresenter;
+import com.example.mvpexample.presenter.SelectAndInspectApkPresenter;
 import static android.app.Activity.RESULT_OK;
 
 public class SelectAndInspectApkFragment extends Fragment implements ISelectAndInspectApkView {
 
     private static final int PICKAPK_RESULT_CODE = 100;
 
-    SelectApkPresenter presenter;
+    SelectAndInspectApkPresenter presenter;
     private Button btnSearchFile;
     private TextView txtViewSelectedFile;
     private Button btnInspectApkAndNext;
@@ -38,7 +38,7 @@ public class SelectAndInspectApkFragment extends Fragment implements ISelectAndI
         txtViewSelectedFile = view.findViewById(R.id.txtViewSelectedFile);
         btnInspectApkAndNext = view.findViewById(R.id.btnInspectApkAndNext);
 
-        presenter = new SelectApkPresenter(this, ((MainActivity) getActivity()).getRequestManager(), ((MainActivity) getActivity()).getFragNavigator());
+        presenter = new SelectAndInspectApkPresenter(this, ((MainActivity) getActivity()).getRequestManager(), ((MainActivity) getActivity()).getFragNavigator());
 
         View.OnClickListener searchFileListener = new View.OnClickListener() {
             @Override

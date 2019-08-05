@@ -41,12 +41,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    /*@Override
+    @Override
     protected void onStart() {
         super.onStart();
 
         Log.d("START", "onStart()");
-        this.appListener = new AppListener(requestManager);
+        this.appListener = new AppListener(requestManager, getPackageManager());
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
 
         unregisterReceiver(appListener);
-    }*/
+    }
 
     private void askForWriteExternalStoragePermission() {
 

@@ -15,6 +15,7 @@ import android.content.pm.ResolveInfo;
 import android.content.pm.Signature;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.OpenableColumns;
@@ -22,6 +23,8 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.example.mvpexample.BuildConfig;
 import com.example.mvpexample.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -39,7 +42,9 @@ public class RequestManager {
     private static final String PATH_TO_GPS_APK = Environment.getExternalStorageDirectory() + "/.aptoide/" + GPS_FILE_NAME;
 
     private static final String GOOGLE_PLAY_SERVICES_LINK_MARKET = "https://perkhidmatan-google-play.en.aptoide.com/";
-    private static final String GOOGLE_PLAY_SERVICES_LINK_DIRECT = "https://download.apkpure.com/b/apk/Y29tLmdvb2dsZS5hbmRyb2lkLmdtc18xODM4MjAyOF9hZTg5YjgzZQ?_fn=R29vZ2xlIFBsYXkgc2VydmljZXNfdjE4LjMuODIgKDA5MDQwMC0yNjAyNjQwMDIpX2Fwa3B1cmUuY29tLmFwaw&k=e6f6002f3e39774c80e3ae7c77ab455c5d45b84d&as=75e7570bd972a666a764b6cad0a944d15d4315c5&_p=Y29tLmdvb2dsZS5hbmRyb2lkLmdtcw&c=1%7CTOOLS%7CZGV2PUdvb2dsZSUyMExMQyZ0PWFwayZzPTU4NDU4MTE3JnZuPTE4LjMuODIlMjAoMDkwNDAwLTI2MDI2NDAwMikmdmM9MTgzODIwMjg&hot=1";
+
+    // TO DO
+    private static final String GOOGLE_PLAY_SERVICES_LINK_DIRECT = "https://download.apkpure.com/b/apk/Y29tLmdvb2dsZS5hbmRyb2lkLmdtc18xODM4MjAyOF9hZTg5YjgzZQ?_fn=R29vZ2xlIFBsYXkgc2VydmljZXNfdjE4LjMuODIgKDA5MDQwMC0yNjAyNjQwMDIpX2Fwa3B1cmUuY29tLmFwaw&k=721d3125a5cce21bfd1f43fafa4607c45d4a9c73&as=53e5dc57f25dd33e32b93f7affc8b4c25d47f9eb&_p=Y29tLmdvb2dsZS5hbmRyb2lkLmdtcw&c=1%7CTOOLS%7CZGV2PUdvb2dsZSUyMExMQyZ0PWFwayZzPTU4NDU4MTE3JnZuPTE4LjMuODIlMjAoMDkwNDAwLTI2MDI2NDAwMikmdmM9MTgzODIwMjg&hot=1";
 
     private final PackageManager packageManager;
     private final ContentResolver contentResolver;
@@ -226,17 +231,45 @@ public class RequestManager {
                         "Everything is ok!")
                         .create();
         alertDialog.show();
+
         return true;
     }
 
     private void installAPK(String pathToApk) {
-        Intent intent = new Intent("android.intent.action.VIEW");
+        Log.d("TAG", "Install APK!");
+        /*Intent intent = new Intent("android.intent.action.VIEW");
         intent.addCategory("android.intent.category.DEFAULT");
 
         Uri apkURI = FileProvider.getUriForFile(mainActivity, mainActivity.getApplicationContext().getPackageName() + ".provider", new File(pathToApk));
         intent.setDataAndType(apkURI, "application/vnd.android.package-archive");
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        mainActivity.startActivity(intent);
+        mainActivity.startActivity(intent);*/
+
+        /*Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
+        Uri apkURI = FileProvider.getUriForFile(mainActivity, mainActivity.getApplicationContext().getPackageName() + ".provider", new File(pathToApk));
+        intent.setDataAndType(apkURI, "application/vnd.android.package-archive");
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mainActivity.startActivity(intent);*/
+
+        /*Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(Uri.fromFile(new File(pathToApk)), "application/vnd.android.package-archive");
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mainActivity.startActivity(intent);*/
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Uri apkUri = FileProvider.getUriForFile(mainActivity, BuildConfig.APPLICATION_ID + ".provider", new File(pathToApk));
+            Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
+            intent.setData(apkUri);
+            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            mainActivity.startActivity(intent);
+        } else {
+            Uri apkUri = Uri.fromFile(new File(pathToApk));
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(apkUri, "application/vnd.android.package-archive");
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            mainActivity.startActivity(intent);
+        }
     }
 
     private long downloadID;

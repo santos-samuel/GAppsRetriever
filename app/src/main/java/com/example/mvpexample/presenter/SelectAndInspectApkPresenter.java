@@ -8,7 +8,7 @@ import android.support.v4.app.Fragment;
 import com.example.mvpexample.model.FragmentNavigator;
 import com.example.mvpexample.model.RequestManager;
 
-public class SelectApkPresenter {
+public class SelectAndInspectApkPresenter {
 
     private ISelectAndInspectApkView view;
     private RequestManager requestManager;
@@ -16,7 +16,7 @@ public class SelectApkPresenter {
     FragmentNavigator fragNavigator;
     private String infoFromInspectApk;
 
-    public SelectApkPresenter(ISelectAndInspectApkView view, RequestManager requestManager, FragmentNavigator fragNavigator) {
+    public SelectAndInspectApkPresenter(ISelectAndInspectApkView view, RequestManager requestManager, FragmentNavigator fragNavigator) {
         this.view = view;
         this.requestManager = requestManager;
         this.fragNavigator = fragNavigator;
