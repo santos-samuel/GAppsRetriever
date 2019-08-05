@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PermissionInfo;
@@ -44,7 +45,7 @@ public class RequestManager {
     private static final String GOOGLE_PLAY_SERVICES_LINK_MARKET = "https://perkhidmatan-google-play.en.aptoide.com/";
 
     // TO DO
-    private static final String GOOGLE_PLAY_SERVICES_LINK_DIRECT = "https://download.apkpure.com/b/apk/Y29tLmdvb2dsZS5hbmRyb2lkLmdtc18xODM4MjAyOF9hZTg5YjgzZQ?_fn=R29vZ2xlIFBsYXkgc2VydmljZXNfdjE4LjMuODIgKDA5MDQwMC0yNjAyNjQwMDIpX2Fwa3B1cmUuY29tLmFwaw&k=721d3125a5cce21bfd1f43fafa4607c45d4a9c73&as=53e5dc57f25dd33e32b93f7affc8b4c25d47f9eb&_p=Y29tLmdvb2dsZS5hbmRyb2lkLmdtcw&c=1%7CTOOLS%7CZGV2PUdvb2dsZSUyMExMQyZ0PWFwayZzPTU4NDU4MTE3JnZuPTE4LjMuODIlMjAoMDkwNDAwLTI2MDI2NDAwMikmdmM9MTgzODIwMjg&hot=1";
+    private static final String GOOGLE_PLAY_SERVICES_LINK_DIRECT = "https://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=762848";
 
     private final PackageManager packageManager;
     private final ContentResolver contentResolver;
@@ -86,6 +87,71 @@ public class RequestManager {
         }
 
         return inspectApkManifest(pathToApk);
+    }
+
+    public boolean doesThisAppRequireGooglePlayServices(String packageName) throws PackageManager.NameNotFoundException {
+
+        //--------------------------- META_DATA --------------------------------//
+        PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_META_DATA);
+        Bundle metaData = packageInfo.applicationInfo.metaData;
+
+        // LOCATION SERVICES
+        Object object = metaData.get("com.google.android.geo.API_KEY");
+        if (object != null)
+            return true;
+
+
+        object = metaData.get("com.google.android.maps.v2.API_KEY");
+        if (object != null)
+            return true;
+
+
+        // WALLET SERVICES
+        object = metaData.get("com.google.android.gms.wallet.api.enabled");
+        if (object != null)
+            return true;
+
+
+        // GOOGLE NEARBY
+        object = metaData.get("com.google.android.nearby.messages.API_KEY");
+        if (object != null)
+            return true;
+
+
+        // SAFETY NET (SURE?)
+        object = metaData.get("com.google.android.safetynet.ATTEST_API_KEY");
+        if (object != null)
+            return true;
+
+
+        // GOOGLE PLAY GAMES SERVICE (maybe notify about needing both services)
+        object = metaData.get("com.google.android.gms.games.APP_ID");
+        if (object != null)
+            return true;
+
+
+        //--------------------------- ACTIVITIES --------------------------------//
+        packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
+
+        // AUTH SERVICE
+        ActivityInfo[] activities = packageInfo.activities;
+        for (ActivityInfo ai : activities) {
+            if (ai.name.equals("com.google.android.gms.auth.api.signin.internal.SignInHubActivity"))
+                return true;
+        }
+
+
+        //--------------------------- PERMISSIONS --------------------------------//
+        packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_PERMISSIONS);
+
+        // BILLING && READ_GSERVICES
+        String[] requestedPermissions = packageInfo.requestedPermissions;
+        for (String rp : requestedPermissions) {
+            if (rp.equals("com.android.vending.BILLING") || rp.equals("com.google.android.providers.gsf.permission.READ_GSERVICES"))
+                return true;
+        }
+
+        return false;
     }
 
     private boolean inspectApkManifest(String pathToApk) {

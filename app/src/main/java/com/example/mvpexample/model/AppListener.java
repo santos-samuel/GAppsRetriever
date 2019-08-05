@@ -34,12 +34,10 @@ public class AppListener extends BroadcastReceiver {
             requestManager.deleteApkFileOnStorage();
 
         else { // A new app has been installed
-            List<ApplicationInfo> installedApplications = packageManager.getInstalledApplications(PackageManager.GET_META_DATA);
-
-            for (ApplicationInfo ai : installedApplications) {
-                if (ai.packageName.equals(installedPackageName)) {
-                    // inspect to verify if the new App requires GPS
-                }
+            try {
+                requestManager.doesThisAppRequireGooglePlayServices(installedPackageName);
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
             }
         }
     }
