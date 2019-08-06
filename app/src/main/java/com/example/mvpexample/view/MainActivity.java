@@ -37,22 +37,15 @@ public class MainActivity extends AppCompatActivity {
         askForWriteExternalStoragePermission();
 
         init();
-    }
 
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        Log.d("START", "onStart()");
         this.appListener = new AppListener(requestManager, this);
-
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
         intentFilter.addAction(Intent.ACTION_PACKAGE_CHANGED);
         intentFilter.addDataScheme("package");
         registerReceiver(appListener, intentFilter);
     }
+
 
     @Override
     protected void onDestroy() {

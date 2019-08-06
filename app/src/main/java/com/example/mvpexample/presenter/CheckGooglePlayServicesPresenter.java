@@ -1,12 +1,10 @@
 package com.example.mvpexample.presenter;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
-
 import com.example.mvpexample.model.DeviceNotSupportedException;
 import com.example.mvpexample.model.FragmentNavigator;
+import com.example.mvpexample.model.GooglePlayServicesIsDisabledException;
 import com.example.mvpexample.model.RequestManager;
 
 public class CheckGooglePlayServicesPresenter {
@@ -35,6 +33,8 @@ public class CheckGooglePlayServicesPresenter {
             }
         } catch (DeviceNotSupportedException e) {
             view.showDialog("This device is not supported!");
+        } catch (GooglePlayServicesIsDisabledException e) {
+            view.showDialog("Google Play Services is disabled!");
         }
 
     }

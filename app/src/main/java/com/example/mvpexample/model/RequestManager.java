@@ -18,11 +18,9 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.OpenableColumns;
 import android.support.v4.content.FileProvider;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.Toast;
 import com.example.mvpexample.BuildConfig;
-import com.example.mvpexample.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import java.io.File;
@@ -248,7 +246,7 @@ public class RequestManager {
         return result;
     }
 
-    public boolean checkIfGooglePlayServicesIsAvailable() throws DeviceNotSupportedException {
+    public boolean checkIfGooglePlayServicesIsAvailable() throws DeviceNotSupportedException, GooglePlayServicesIsDisabledException {
         GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
         //int resultCode = apiAvailability.isGooglePlayServicesAvailable(mainActivity); //Returns status code indicating whether there was an error. Can be one of following in ConnectionResult: SUCCESS, SERVICE_MISSING, SERVICE_UPDATING, SERVICE_VERSION_UPDATE_REQUIRED, SERVICE_DISABLED, SERVICE_INVALID
         int resultCode = apiAvailability.isGooglePlayServicesAvailable(mainActivity);
@@ -263,8 +261,10 @@ public class RequestManager {
 
                 default:
                     if (apiAvailability.isUserResolvableError(resultCode)) { // 3 (disabled) or 18 (updating)
-                        apiAvailability.getErrorDialog(mainActivity, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST).show();
-                        return true; // TO DO
+                        if (resultCode == ConnectionResult.SERVICE_DISABLED)
+                            throw new GooglePlayServicesIsDisabledException();
+                        else
+                            return true;
                     }
 
                     else {
@@ -277,7 +277,8 @@ public class RequestManager {
             return false;
         }
 
-        return true;
+        else
+            return true;
     }
 
     private void installAPK(String pathToApk) {

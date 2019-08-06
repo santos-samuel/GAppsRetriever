@@ -31,6 +31,7 @@ public class SelectAndInspectApkPresenter {
         try {
             bool = requestManager.doesThisAppRequireGooglePlayServices(lastSelectedFileURI);
         } catch (Exception e) {
+            infoFromInspectApk = "Exception: APK could not be parsed.";
             return;
         }
 
