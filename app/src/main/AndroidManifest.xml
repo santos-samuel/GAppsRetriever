@@ -31,6 +31,20 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths"/>
         </provider>
+
+        <receiver
+            android:name=".model.AppListenerRestarter"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="restartservice" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".model.AppListenerService"
+            android:enabled="true" >
+        </service>
     </application>
 
 </manifest>

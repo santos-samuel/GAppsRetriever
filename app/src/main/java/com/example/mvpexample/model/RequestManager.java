@@ -23,6 +23,8 @@ import android.widget.Toast;
 import com.example.mvpexample.BuildConfig;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -257,12 +259,15 @@ public class RequestManager {
                 case ConnectionResult.SERVICE_MISSING:                  // 1
                 case ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED:  // 2
                 case ConnectionResult.SERVICE_INVALID:                  // 9
+                    GooglePlayServicesUtil.getErrorDialog(resultCode, mainActivity, PLAY_SERVICES_RESOLUTION_REQUEST).show();
                     break;
 
                 default:
                     if (apiAvailability.isUserResolvableError(resultCode)) { // 3 (disabled) or 18 (updating)
-                        if (resultCode == ConnectionResult.SERVICE_DISABLED)
+                        if (resultCode == ConnectionResult.SERVICE_DISABLED) {
+                            GooglePlayServicesUtil.getErrorDialog(resultCode, mainActivity, PLAY_SERVICES_RESOLUTION_REQUEST).show();
                             throw new GooglePlayServicesIsDisabledException();
+                        }
                         else
                             return true;
                     }

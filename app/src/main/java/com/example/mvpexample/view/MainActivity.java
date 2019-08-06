@@ -1,9 +1,9 @@
 package com.example.mvpexample.view;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -12,7 +12,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import com.example.mvpexample.R;
-import com.example.mvpexample.model.AppListener;
+import com.example.mvpexample.model.AppListenerService;
 import com.example.mvpexample.model.FragmentNavigator;
 import com.example.mvpexample.model.PersistentMemory;
 import com.example.mvpexample.model.RequestManager;
@@ -25,7 +25,8 @@ public class MainActivity extends AppCompatActivity {
     private FragmentNavigator fragNavigator;
     private RequestManager requestManager;
     private PersistentMemory persistentMemory;
-    private BroadcastReceiver appListener;
+    Intent appListenerIntent;
+    private AppListenerService appListenerService;
 
 
     @Override
@@ -33,25 +34,35 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        askForReadExternalStoragePermission();
-        askForWriteExternalStoragePermission();
-
         init();
 
-        this.appListener = new AppListener(requestManager, this);
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
-        intentFilter.addAction(Intent.ACTION_PACKAGE_CHANGED);
-        intentFilter.addDataScheme("package");
-        registerReceiver(appListener, intentFilter);
+        //appListenerService = new AppListenerService();
+        //appListenerIntent = new Intent(this, appListenerService.getClass());
+        //if (!isMyServiceRunning(appListenerService.getClass())) {
+        //    startService(appListenerIntent);
+        //}
+
+        askForReadExternalStoragePermission();
+        askForWriteExternalStoragePermission();
+    }
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                Log.i ("Service status", "Running");
+                return true;
+            }
+        }
+        Log.i ("Service status", "Not running");
+        return false;
     }
 
 
     @Override
     protected void onDestroy() {
+        stopService(appListenerIntent);
         super.onDestroy();
-
-        unregisterReceiver(appListener);
     }
 
     private void askForWriteExternalStoragePermission() {
