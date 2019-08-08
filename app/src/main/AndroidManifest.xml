@@ -14,12 +14,18 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <activity android:name=".view.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".view.AppListenerActivity"
+            android:autoRemoveFromRecents="true">
         </activity>
 
         <provider
@@ -32,19 +38,17 @@
                 android:resource="@xml/provider_paths"/>
         </provider>
 
-        <receiver
-            android:name=".model.AppListenerRestarter"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="restartservice" />
-            </intent-filter>
-        </receiver>
-
         <service
-            android:name=".model.AppListenerService"
+            android:name="com.example.mvpexample.model.AppListenerService"
             android:enabled="true" >
         </service>
+
+        <receiver
+            android:name="com.example.mvpexample.model.AppListenerRestarter"
+            android:enabled="true"
+            android:exported="true"
+            android:label="RestartServiceWhenStopped">
+        </receiver>
     </application>
 
 </manifest>

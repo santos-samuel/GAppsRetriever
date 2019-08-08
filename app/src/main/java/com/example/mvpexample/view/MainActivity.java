@@ -36,11 +36,11 @@ public class MainActivity extends AppCompatActivity {
 
         init();
 
-        //appListenerService = new AppListenerService();
-        //appListenerIntent = new Intent(this, appListenerService.getClass());
-        //if (!isMyServiceRunning(appListenerService.getClass())) {
-        //    startService(appListenerIntent);
-        //}
+        appListenerService = new AppListenerService(this);
+        appListenerIntent = new Intent(this, appListenerService.getClass());
+        if (!isMyServiceRunning(appListenerService.getClass())) {
+            startService(appListenerIntent);
+        }
 
         askForReadExternalStoragePermission();
         askForWriteExternalStoragePermission();
@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         stopService(appListenerIntent);
+        Log.i("MAINACT", "onDestroy!");
         super.onDestroy();
     }
 
