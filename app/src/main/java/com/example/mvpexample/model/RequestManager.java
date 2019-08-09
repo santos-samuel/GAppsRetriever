@@ -1,10 +1,12 @@
 package com.example.mvpexample.model;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
@@ -12,15 +14,18 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.OpenableColumns;
+import android.provider.Settings;
 import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.widget.Toast;
 import com.example.mvpexample.BuildConfig;
+import com.example.mvpexample.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -87,15 +92,69 @@ public class RequestManager {
 
     public boolean doesThisAppRequireGooglePlayServices(String packageName) throws PackageManager.NameNotFoundException {
 
+        boolean needsGooglePlayServices = false;
+
+
         //--------------------------- META_DATA --------------------------------//
         PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_META_DATA);
         Bundle metaData = packageInfo.applicationInfo.metaData;
 
+        if (metaData != null)
+            needsGooglePlayServices = searchMetadata(metaData); // returns true if there is something in metadata that requires Google Play Services
+
+        if (needsGooglePlayServices)
+            return true;
+
+        //--------------------------- ACTIVITIES --------------------------------//
+        packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
+        ActivityInfo[] activities = packageInfo.activities;
+
+        if (activities != null)
+            needsGooglePlayServices = searchActivities(activities); // returns true if there is something in activities that requires Google Play Services
+
+        if (needsGooglePlayServices)
+            return true;
+
+
+        //--------------------------- PERMISSIONS --------------------------------//
+        packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_PERMISSIONS);
+        String[] requestedPermissions = packageInfo.requestedPermissions;
+
+        if (requestedPermissions != null)
+            needsGooglePlayServices = searchPermissions(requestedPermissions); // returns true if there is something in permissions that requires Google Play Services
+
+        if (needsGooglePlayServices)
+            return true;
+
+
+        return false;
+    }
+
+    private boolean searchPermissions(String[] requestedPermissions) {
+        // BILLING && READ_GSERVICES
+        for (String rp : requestedPermissions) {
+            if (rp.equals("com.android.vending.BILLING") || rp.equals("com.google.android.providers.gsf.permission.READ_GSERVICES"))
+                return true;
+        }
+
+        return false;
+    }
+
+    private boolean searchActivities(ActivityInfo[] activities) {
+        // AUTH SERVICE
+        for (ActivityInfo ai : activities) {
+            if (ai.name.equals("com.google.android.gms.auth.api.signin.internal.SignInHubActivity"))
+                return true;
+        }
+
+        return false;
+    }
+
+    private boolean searchMetadata(Bundle metaData) {
         // LOCATION SERVICES
         Object object = metaData.get("com.google.android.geo.API_KEY");
         if (object != null)
             return true;
-
 
         object = metaData.get("com.google.android.maps.v2.API_KEY");
         if (object != null)
@@ -124,28 +183,6 @@ public class RequestManager {
         object = metaData.get("com.google.android.gms.games.APP_ID");
         if (object != null)
             return true;
-
-
-        //--------------------------- ACTIVITIES --------------------------------//
-        packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
-
-        // AUTH SERVICE
-        ActivityInfo[] activities = packageInfo.activities;
-        for (ActivityInfo ai : activities) {
-            if (ai.name.equals("com.google.android.gms.auth.api.signin.internal.SignInHubActivity"))
-                return true;
-        }
-
-
-        //--------------------------- PERMISSIONS --------------------------------//
-        packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_PERMISSIONS);
-
-        // BILLING && READ_GSERVICES
-        String[] requestedPermissions = packageInfo.requestedPermissions;
-        for (String rp : requestedPermissions) {
-            if (rp.equals("com.android.vending.BILLING") || rp.equals("com.google.android.providers.gsf.permission.READ_GSERVICES"))
-                return true;
-        }
 
         return false;
     }
@@ -248,9 +285,11 @@ public class RequestManager {
         return result;
     }
 
-    public boolean checkIfGooglePlayServicesIsAvailable() throws DeviceNotSupportedException, GooglePlayServicesIsDisabledException {
+    public void checkIfGooglePlayServicesIsAvailable() {
         GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
-        //int resultCode = apiAvailability.isGooglePlayServicesAvailable(mainActivity); //Returns status code indicating whether there was an error. Can be one of following in ConnectionResult: SUCCESS, SERVICE_MISSING, SERVICE_UPDATING, SERVICE_VERSION_UPDATE_REQUIRED, SERVICE_DISABLED, SERVICE_INVALID
+
+        // Returns status code indicating whether there was an error. Can be one of following:
+        // SUCCESS, SERVICE_MISSING, SERVICE_UPDATING, SERVICE_VERSION_UPDATE_REQUIRED, SERVICE_DISABLED, SERVICE_INVALID
         int resultCode = apiAvailability.isGooglePlayServicesAvailable(mainActivity);
 
         if (resultCode != ConnectionResult.SUCCESS) {
@@ -258,32 +297,32 @@ public class RequestManager {
             switch (resultCode) {
                 case ConnectionResult.SERVICE_MISSING:                  // 1
                 case ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED:  // 2
+                    showAskUserIfHeWantsToDownloadDialog();
+                    break;
+
                 case ConnectionResult.SERVICE_INVALID:                  // 9
+                    showDeviceNotSupportedDialog();
+                    break;
+
+                case ConnectionResult.SERVICE_DISABLED:                 // 3
+                    showGooglePlayServicesIsDisabledDialog();
+                    break;
+
+                case ConnectionResult.SERVICE_UPDATING:                 // 18
+                    // no problem?
                     GooglePlayServicesUtil.getErrorDialog(resultCode, mainActivity, PLAY_SERVICES_RESOLUTION_REQUEST).show();
                     break;
 
                 default:
-                    if (apiAvailability.isUserResolvableError(resultCode)) { // 3 (disabled) or 18 (updating)
-                        if (resultCode == ConnectionResult.SERVICE_DISABLED) {
-                            GooglePlayServicesUtil.getErrorDialog(resultCode, mainActivity, PLAY_SERVICES_RESOLUTION_REQUEST).show();
-                            throw new GooglePlayServicesIsDisabledException();
-                        }
-                        else
-                            return true;
+                    if (!apiAvailability.isUserResolvableError(resultCode)) { // 3 (disabled) or 18 (updating)
+                        showDeviceNotSupportedDialog();
                     }
-
-                    else {
-                        throw new DeviceNotSupportedException();
-                    }
-                    //break;
-
+                    break;
             }
-
-            return false;
         }
-
-        else
-            return true;
+        else {                                                          // 0
+            showOkDialog();
+        }
     }
 
     private void installAPK(String pathToApk) {
@@ -372,5 +411,173 @@ public class RequestManager {
         } catch (Exception e) {
             Log.d("DELETE", "Something went wrong while trying to delete the apk downloaded file");
         }
+    }
+
+    public void showOkDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+        // Add the buttons
+        builder.setNeutralButton(R.string.cast_tracks_chooser_dialog_ok, null);
+
+        // Set other dialog properties
+        builder.setTitle("Alert");
+        builder.setMessage("Eveything is ok!");
+
+        builder.setIcon(R.drawable.aptoide_icon);
+
+        // Create the AlertDialog
+        final AlertDialog dialog = builder.create();
+
+        //2. now setup to change color of the button
+        dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface arg0) {
+                dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(Color.rgb(232, 106, 37));
+            }
+        });
+
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                closeActivity(mainActivity);
+            }
+        });
+
+        dialog.show();
+    }
+
+    private void showGooglePlayServicesIsDisabledDialog() { // DISABLED
+        AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+        // Add the buttons
+        builder.setPositiveButton(R.string.cast_tracks_chooser_dialog_yes, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                Intent openGPSSettings = new Intent();
+                openGPSSettings.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                Uri uri = Uri.fromParts("package", "com.google.android.gms", null);
+                openGPSSettings.setData(uri);
+                mainActivity.startActivity(openGPSSettings);
+            }
+        });
+        builder.setNegativeButton(R.string.cast_tracks_chooser_dialog_no, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User cancelled the dialog
+            }
+        });
+
+        // Set other dialog properties
+        builder.setTitle("Alert");
+        builder.setMessage("The installed app contains features that may not " +
+                "work unless you enable Google Play Services App.\n" +
+                "Do you want to enable Google Play Services?");
+
+        builder.setIcon(R.drawable.aptoide_icon);
+
+        // Create the AlertDialog
+        final AlertDialog dialog = builder.create();
+
+        //2. now setup to change color of the button
+        dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface arg0) {
+                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.rgb(232, 106, 37));
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.rgb(232, 106, 37));
+            }
+        });
+
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                closeActivity(mainActivity);
+            }
+        });
+
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
+    }
+
+    private void showAskUserIfHeWantsToDownloadDialog() { // UPDATE_REQUIRED and MISSING
+        AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+        // Add the buttons
+        builder.setPositiveButton(R.string.cast_tracks_chooser_dialog_yes, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                downloadGooglePlayServicesMarket();
+            }
+        });
+
+        builder.setNegativeButton(R.string.cast_tracks_chooser_dialog_no, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User cancelled the dialog
+            }
+        });
+
+        // Set other dialog properties
+        builder.setTitle("Alert");
+        builder.setMessage("The installed app contains features that may not " +
+                "work unless you install/update Google Play Services App.\n" +
+                "Do you want to install the latest version of Google Play Services?");
+
+        builder.setIcon(R.drawable.aptoide_icon);
+
+        // Create the AlertDialog
+        final AlertDialog dialog = builder.create();
+
+        //2. now setup to change color of the button
+        dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface arg0) {
+                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.rgb(232, 106, 37));
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.rgb(232, 106, 37));
+            }
+        });
+
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                closeActivity(mainActivity);
+            }
+        });
+
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
+    }
+
+    private void showDeviceNotSupportedDialog() { // INVALID and !isUserResolvableError
+        AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+        // Add the buttons
+        builder.setNeutralButton(R.string.cast_tracks_chooser_dialog_ok, null);
+
+        // Set other dialog properties
+        builder.setTitle("Alert");
+        builder.setMessage("The installed app contains features that may not " +
+                "work without Google Play Services, which are not supported by your device.");
+
+        builder.setIcon(R.drawable.aptoide_icon);
+
+        // Create the AlertDialog
+        final AlertDialog dialog = builder.create();
+
+        //2. now setup to change color of the button
+        dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface arg0) {
+                dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(Color.rgb(232, 106, 37));
+            }
+        });
+
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                closeActivity(mainActivity);
+            }
+        });
+
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
+    }
+
+    private void closeActivity(Activity a) {
+        a.finish();
     }
 }

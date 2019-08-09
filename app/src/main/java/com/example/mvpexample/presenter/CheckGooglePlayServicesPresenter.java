@@ -2,9 +2,7 @@ package com.example.mvpexample.presenter;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import com.example.mvpexample.model.DeviceNotSupportedException;
 import com.example.mvpexample.model.FragmentNavigator;
-import com.example.mvpexample.model.GooglePlayServicesIsDisabledException;
 import com.example.mvpexample.model.RequestManager;
 
 public class CheckGooglePlayServicesPresenter {
@@ -25,18 +23,7 @@ public class CheckGooglePlayServicesPresenter {
     }
 
     public void checkGPSAvailability() {
-        try {
-            if (requestManager.checkIfGooglePlayServicesIsAvailable()) {
-                view.showDialog("Everything is ok!");
-            } else {
-                view.showDialog("Google play services is not installed/updated/valid!");
-            }
-        } catch (DeviceNotSupportedException e) {
-            view.showDialog("This device is not supported!");
-        } catch (GooglePlayServicesIsDisabledException e) {
-            view.showDialog("Google Play Services is disabled!");
-        }
-
+        requestManager.checkIfGooglePlayServicesIsAvailable();
     }
 
     public void changeFragment(Fragment newFrag) {

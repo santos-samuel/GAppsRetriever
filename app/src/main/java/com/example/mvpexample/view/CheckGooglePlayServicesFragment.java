@@ -1,8 +1,5 @@
 package com.example.mvpexample.view;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -62,30 +59,5 @@ public class CheckGooglePlayServicesFragment extends Fragment implements ICheckG
     @Override
     public void showIfSelectedAppNeedsGooglePlayServices(String info) {
         txtIfAppNeedsGPS.setText(info);
-    }
-
-    @Override
-    public void showDialog(String s) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        // Add the buttons
-        builder.setNeutralButton(R.string.cast_tracks_chooser_dialog_ok, null);
-
-        // Set other dialog properties
-        builder.setTitle("Alert");
-        builder.setMessage(s);
-
-        builder.setIcon(R.drawable.aptoide_icon);
-
-        // Create the AlertDialog
-        final AlertDialog dialog = builder.create();
-
-        //2. now setup to change color of the button
-        dialog.setOnShowListener( new DialogInterface.OnShowListener() {
-            @Override
-            public void onShow(DialogInterface arg0) {
-                dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(Color.rgb(232, 106, 37));
-            }
-        });
-        dialog.show();
     }
 }
