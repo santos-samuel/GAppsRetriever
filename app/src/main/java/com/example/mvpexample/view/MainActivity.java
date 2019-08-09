@@ -5,6 +5,7 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -39,7 +40,11 @@ public class MainActivity extends AppCompatActivity {
         appListenerService = new AppListenerService();
         appListenerIntent = new Intent(this, appListenerService.getClass());
         if (!isMyServiceRunning(appListenerService.getClass())) {
-            startService(appListenerIntent);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                this.startForegroundService(new Intent(this, AppListenerService.class));
+            } else {
+                this.startService(new Intent(this, AppListenerService.class));
+            }
         }
 
         askForReadExternalStoragePermission();

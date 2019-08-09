@@ -442,6 +442,8 @@ public class RequestManager {
             }
         });
 
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
         dialog.show();
     }
 

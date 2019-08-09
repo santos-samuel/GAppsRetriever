@@ -25,7 +25,8 @@
 
         <activity
             android:name=".view.AppListenerActivity"
-            android:autoRemoveFromRecents="true">
+            android:autoRemoveFromRecents="true"
+            android:theme="@style/Theme.AppCompat.Light.Dialog">
         </activity>
 
         <provider
