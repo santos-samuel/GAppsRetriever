@@ -32,17 +32,22 @@ public class AppListenerService extends Service {
 
         // do stuff like register for BroadcastReceiver, etc.
 
-        // Create the Foreground Service
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        String channelId = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? createNotificationChannel(notificationManager) : "";
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, channelId);
-        Notification notification = notificationBuilder.setOngoing(true)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setPriority(Notification.PRIORITY_MIN)
-                .setCategory(NotificationCompat.CATEGORY_SERVICE)
-                .build();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Create the Foreground Service
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        startForeground(ID_SERVICE, notification);
+            //String channelId = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? createNotificationChannel(notificationManager) : "";
+            String channelId = createNotificationChannel(notificationManager);
+
+            NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, channelId);
+            Notification notification = notificationBuilder.setOngoing(true)
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setPriority(Notification.PRIORITY_MIN)
+                    .setCategory(NotificationCompat.CATEGORY_SERVICE)
+                    .build();
+
+            startForeground(ID_SERVICE, notification);
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -58,62 +63,10 @@ public class AppListenerService extends Service {
     }
 
     public void notifyAppInstalled(String installedPackageName) {
-        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        Intent notificationIntent = new Intent(getApplicationContext(), AppListenerService.class);
-        notificationIntent.putExtra("mytype", "simple" + 10); //not required, but used in this example.
-        PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 10, notificationIntent, 0);
-        //Create a new notification. The construction Notification(int icon, CharSequence tickerText, long when) is deprecated.
-        //If you target API level 11 or above, use Notification.Builder instead
-        //With the second parameter, it would show a marquee
-        Notification noti = new NotificationCompat.Builder(getApplicationContext(), "test_channel_01")
-                .setSmallIcon(R.drawable.aptoide_icon)
-                //.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher))
-                .setWhen(System.currentTimeMillis())  //When the event occurred, now, since noti are stored by time.
-                .setContentTitle("Marquee or Title")   //Title message top row.
-                .setContentText("Message, this has only a small icon.")  //message when looking at the notification, second row
-                .setContentIntent(contentIntent)  //what activity to open.
-                .setAutoCancel(true)   //allow auto cancel when pressed.
-                .setChannelId("test_channel_02")
-                .build();  //finally build and return a Notification.
-
-        //Show the notification
-        nm.notify(10, noti);
-
-
-
-
         Intent intent = new Intent(this, AppListenerActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra("installedPackageName", installedPackageName);
         startActivity(intent);
-
-        /*// Delete installed apk file
-        Log.d("INSTALLED APP", installedPackageName);
-
-        if (installedPackageName.equals("com.google.android.gms")) {
-            //requestManager.deleteApkFileOnStorage();
-        }
-
-        else { // A new app has been installed
-            try {
-                boolean gpsAvailable = requestManager.checkIfGooglePlayServicesIsAvailable();
-
-                if (!gpsAvailable) {
-
-                    boolean requiresGPS = requestManager.doesThisAppRequireGooglePlayServices(installedPackageName);
-
-                    if (requiresGPS)
-                        showAskUserIfHeWantsToDownloadDialog();
-                }
-            } catch (PackageManager.NameNotFoundException e) {
-                e.printStackTrace();
-            } catch (DeviceNotSupportedException e) {
-                showDeviceNotSupportedDialog();
-            } catch (GooglePlayServicesIsDisabledException e) {
-                showGooglePlayServicesIsDisabledDialog();
-            }
-        }*/
     }
 
     @Override
@@ -129,10 +82,15 @@ public class AppListenerService extends Service {
 
         Log.i("EXIT", "ondestroy!");
 
-        Intent broadcastIntent = new Intent(this, AppListenerRestarter.class);
-        sendBroadcast(broadcastIntent);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            stopForeground(true); //true will remove notification
+//        }
+//        else {
+            Intent broadcastIntent = new Intent(this, AppListenerRestarter.class);
+            sendBroadcast(broadcastIntent);
 
-        stopListening();
+            stopListening();
+        //}
 
     }
 
