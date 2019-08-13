@@ -19,4 +19,8 @@ public class DownloadGPSPresenter {
     public void downloadGPSRequestDirect() {
         requestManager.downloadGooglePlayServicesDirect();
     }
+
+    public void checkHardwareInfo() {
+        requestManager.checkHardwareInfo();
+    }
 }

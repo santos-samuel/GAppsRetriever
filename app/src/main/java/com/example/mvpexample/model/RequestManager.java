@@ -16,6 +16,7 @@ import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -30,7 +31,13 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 
@@ -581,5 +588,116 @@ public class RequestManager {
 
     private void closeActivity(Activity a) {
         a.finish();
+    }
+
+    public void checkHardwareInfo() {
+        final String DEBUG_TAG_ARC = "Supported ABIS";
+
+        int OSNumber = Build.VERSION.SDK_INT;
+
+        Toast.makeText(mainActivity, "API: "+ OSNumber, Toast.LENGTH_SHORT).show();
+        Log.d(DEBUG_TAG_ARC, "API: "+OSNumber);
+
+
+        if(OSNumber < Build.VERSION_CODES.LOLLIPOP ) {
+            String[] supportedABIS = new String[]{Build.CPU_ABI, Build.CPU_ABI2};
+
+            for (String s : supportedABIS) {
+                Log.d("SUPPORTED_ABIS", s);
+            }
+        }
+
+        if(OSNumber >= Build.VERSION_CODES.LOLLIPOP ) {
+            String[] supportedABIS = Build.SUPPORTED_ABIS;
+
+            for (String s : supportedABIS) {
+                Log.d("SUPPORTED_ABIS", s);
+            }
+        }
+
+
+        new MyTaskAPKMirror().execute();
+    }
+}
+
+class MyTaskAPKPure extends AsyncTask<Void, Void, String> {
+
+    @Override
+    protected String doInBackground(Void... params) {
+        String title ="";
+        Document doc;
+        try {
+            doc = Jsoup.connect("https://apkpure.com/google-play-services/com.google.android.gms/versions").get();
+            Elements a = doc.getElementsByClass("ver-info-m");
+            title = doc.title();
+            System.out.print(title);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return title;
+    }
+
+
+    @Override
+    protected void onPostExecute(String result) {
+        //if you had a ui element, you could display the title
+    }
+}
+
+class MyTaskAPKMirror extends AsyncTask<Void, Void, String> {
+
+    @Override
+    protected String doInBackground(Void... params) {
+        String title ="";
+        Document doc;
+        try {
+            for (int i = 1; ; i++) {
+                doc = Jsoup.connect("https://www.apkmirror.com/uploads/page/"+i+"/?q=google-play-services").get();
+                Elements elements = doc.getElementsByClass("appRowVariantTag wrapText");
+
+                if (elements.size() == 0) // no div with class 'appRowVariantTag wrapText' found (page number exceeded)
+                    break;
+
+                for (Element e : elements) {
+                    String link = e.select("a[href]").first().attr("abs:href");
+                    System.out.println(link);
+
+                    verifyIfReleaseSuitsDeviceSpecs(link);
+
+                    // get href, execute download and install
+                }
+                title = doc.title();
+                System.out.print(title);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return title;
+    }
+
+    private void verifyIfReleaseSuitsDeviceSpecs(String link) throws IOException {
+        Document doc = Jsoup.connect(link).get();
+        Elements elements = doc.getElementsByClass("table-row headerFont");
+        elements.remove(0); // remove header
+        for (Element e : elements) {
+            Elements variantInfo = e.getElementsByClass("table-cell rowheight addseparator expand pad dowrap");
+            String[] archList = variantInfo.get(1).text().split("\\+");
+            
+            String minVersion = variantInfo.get(2).text(); // Android X.Y+
+            String[] minVersionParsed = minVersion.split("\\s"); // {Android, X.Y+}
+            String minVersionFinal = minVersionParsed[1].substring(0, minVersionParsed[1].length() - 1); // X.Y
+
+
+            System.out.println("");
+            // se pertence aos arch list
+            // se strcmp maior que o minversionfinal
+            // return true / false
+        }
+    }
+
+
+    @Override
+    protected void onPostExecute(String result) {
+        //if you had a ui element, you could display the title
     }
 }

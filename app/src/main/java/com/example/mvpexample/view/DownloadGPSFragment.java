@@ -16,6 +16,7 @@ public class DownloadGPSFragment extends Fragment implements IDownloadGPSView {
     private DownloadGPSPresenter presenter;
     private Button btnDownloadGPSMarket;
     private Button btnDownloadGPSDirect;
+    private Button btnToChangeNameLater;
 
     @Nullable
     @Override
@@ -29,6 +30,7 @@ public class DownloadGPSFragment extends Fragment implements IDownloadGPSView {
 
         btnDownloadGPSMarket = view.findViewById(R.id.btnDownloadGPSMarket);
         btnDownloadGPSDirect = view.findViewById(R.id.btnDownloadGPSDirect);
+        btnToChangeNameLater = view.findViewById(R.id.btnToChangeNameLater);
 
         presenter = new DownloadGPSPresenter(this, ((MainActivity) getActivity()).getRequestManager());
 
@@ -47,5 +49,13 @@ public class DownloadGPSFragment extends Fragment implements IDownloadGPSView {
             }
         };
         btnDownloadGPSDirect.setOnClickListener(downloadGPSMDirectListener);
+
+        View.OnClickListener btnToChangeNameLaterListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                presenter.checkHardwareInfo();
+            }
+        };
+        btnToChangeNameLater.setOnClickListener(btnToChangeNameLaterListener);
     }
 }

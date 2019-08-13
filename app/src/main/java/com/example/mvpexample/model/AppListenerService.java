@@ -3,7 +3,6 @@ package com.example.mvpexample.model;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -82,15 +81,10 @@ public class AppListenerService extends Service {
 
         Log.i("EXIT", "ondestroy!");
 
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            stopForeground(true); //true will remove notification
-//        }
-//        else {
-            Intent broadcastIntent = new Intent(this, AppListenerRestarter.class);
-            sendBroadcast(broadcastIntent);
+        Intent broadcastIntent = new Intent(this, AppListenerRestarter.class);
+        sendBroadcast(broadcastIntent);
 
-            stopListening();
-        //}
+        stopListening();
 
     }
 
