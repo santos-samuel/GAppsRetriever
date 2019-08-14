@@ -30,24 +30,20 @@ import com.example.mvpexample.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
-
 import static android.content.Context.DOWNLOAD_SERVICE;
 
 public class RequestManager {
 
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 90;
 
-    private static final String GPS_FILE_NAME = "gps.apk";
+    private static final String GPS_FILE_NAME = "gps";
     private static final String PATH_TO_GPS_APK = Environment.getExternalStorageDirectory() + "/.aptoide/" + GPS_FILE_NAME;
 
     private static final String GOOGLE_PLAY_SERVICES_LINK_MARKET = "https://perkhidmatan-google-play.en.aptoide.com/";
@@ -55,14 +51,13 @@ public class RequestManager {
     // TO DO
     private static final String GOOGLE_PLAY_SERVICES_LINK_DIRECT = "https://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=762848";
 
-    private final PackageManager packageManager;
     private final ContentResolver contentResolver;
     private final Activity mainActivity;
     private PersistentMemory memory;
+    private DeviceSpecs deviceSpecs;
 
     public RequestManager(PersistentMemory persistentMemory, PackageManager packageManager, ContentResolver contentResolver, Activity activity) {
         this.memory = persistentMemory;
-        this.packageManager = packageManager;
         this.contentResolver = contentResolver;
         this.mainActivity = activity;
     }
@@ -103,7 +98,7 @@ public class RequestManager {
 
 
         //--------------------------- META_DATA --------------------------------//
-        PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_META_DATA);
+        PackageInfo packageInfo = mainActivity.getPackageManager().getPackageInfo(packageName, PackageManager.GET_META_DATA);
         Bundle metaData = packageInfo.applicationInfo.metaData;
 
         if (metaData != null)
@@ -113,7 +108,7 @@ public class RequestManager {
             return true;
 
         //--------------------------- ACTIVITIES --------------------------------//
-        packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
+        packageInfo = mainActivity.getPackageManager().getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
         ActivityInfo[] activities = packageInfo.activities;
 
         if (activities != null)
@@ -124,7 +119,7 @@ public class RequestManager {
 
 
         //--------------------------- PERMISSIONS --------------------------------//
-        packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_PERMISSIONS);
+        packageInfo = mainActivity.getPackageManager().getPackageInfo(packageName, PackageManager.GET_PERMISSIONS);
         String[] requestedPermissions = packageInfo.requestedPermissions;
 
         if (requestedPermissions != null)
@@ -261,7 +256,7 @@ public class RequestManager {
     }
 
     private PackageInfo getPackageInfo(String pathToApk, int componentInfoConstant) {
-        PackageInfo packageArchiveInfo = packageManager.getPackageArchiveInfo(pathToApk, componentInfoConstant);
+        PackageInfo packageArchiveInfo = mainActivity.getPackageManager().getPackageArchiveInfo(pathToApk, componentInfoConstant);
 
         if (packageArchiveInfo == null) {
             throw new IllegalStateException("Extension APK could not be parsed.");
@@ -379,7 +374,7 @@ public class RequestManager {
             mainActivity.startActivity(goToMarket);
     }
 
-    public void downloadGooglePlayServicesDirect() {
+    public void downloadGooglePlayServicesDirect(String link) {
         Log.d("DOWNLOAD", "downloadGooglePlayServicesDirect");
 
         mainActivity.registerReceiver(onDownloadComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
@@ -397,7 +392,7 @@ public class RequestManager {
         /*
         Create a DownloadManager.Request with all the information necessary to start the download
          */
-        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(GOOGLE_PLAY_SERVICES_LINK_DIRECT))
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(link))
                 .setTitle("Google Play Services")// Title of the Download Notification
                 .setDescription("Downloading")// Description of the Download Notification
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)// Visibility of the download Notification
@@ -594,13 +589,14 @@ public class RequestManager {
         final String DEBUG_TAG_ARC = "Supported ABIS";
 
         int OSNumber = Build.VERSION.SDK_INT;
+        String[] supportedABIS = null;
 
         Toast.makeText(mainActivity, "API: "+ OSNumber, Toast.LENGTH_SHORT).show();
         Log.d(DEBUG_TAG_ARC, "API: "+OSNumber);
 
 
         if(OSNumber < Build.VERSION_CODES.LOLLIPOP ) {
-            String[] supportedABIS = new String[]{Build.CPU_ABI, Build.CPU_ABI2};
+            supportedABIS = new String[]{Build.CPU_ABI, Build.CPU_ABI2};
 
             for (String s : supportedABIS) {
                 Log.d("SUPPORTED_ABIS", s);
@@ -608,15 +604,69 @@ public class RequestManager {
         }
 
         if(OSNumber >= Build.VERSION_CODES.LOLLIPOP ) {
-            String[] supportedABIS = Build.SUPPORTED_ABIS;
+            supportedABIS = Build.SUPPORTED_ABIS;
 
             for (String s : supportedABIS) {
                 Log.d("SUPPORTED_ABIS", s);
             }
         }
 
+        this.deviceSpecs = new DeviceSpecs(OSNumber, supportedABIS);
+    }
 
-        new MyTaskAPKMirror().execute();
+    public void getFromApkMirror() {
+        MyTaskAPKMirror apkMirrorSearch = new MyTaskAPKMirror(deviceSpecs, this);
+        apkMirrorSearch.execute();
+    }
+
+    public void notifySearchCompleted(final String result, IGetRequestInfo searcher) {
+        RequestStatus mResult = searcher.getmResult();
+
+        if (mResult != RequestStatus.STATUS_ERROR) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+            builder.setNeutralButton(R.string.cast_tracks_chooser_dialog_ok, null);
+            // Set other dialog properties
+            builder.setTitle("Alert");
+            builder.setMessage(result);
+            builder.setIcon(R.drawable.aptoide_icon);
+            // Create the AlertDialog
+            final AlertDialog dialog = builder.create();
+            //2. now setup to change color of the button
+            dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+                @Override
+                public void onShow(DialogInterface arg0) {
+                    dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(Color.rgb(232, 106, 37));
+                }
+            });
+
+            dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialogInterface) {
+                    downloadGooglePlayServicesDirect(result);
+                }
+            });
+
+            dialog.show();
+        }
+        else {
+            String mError = searcher.getmError();
+            AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+            builder.setNeutralButton(R.string.cast_tracks_chooser_dialog_ok, null);
+            // Set other dialog properties
+            builder.setTitle("Alert");
+            builder.setMessage(mError);
+            builder.setIcon(R.drawable.aptoide_icon);
+            // Create the AlertDialog
+            final AlertDialog dialog = builder.create();
+            //2. now setup to change color of the button
+            dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+                @Override
+                public void onShow(DialogInterface arg0) {
+                    dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(Color.rgb(232, 106, 37));
+                }
+            });
+            dialog.show();
+        }
     }
 }
 
@@ -635,64 +685,6 @@ class MyTaskAPKPure extends AsyncTask<Void, Void, String> {
             e.printStackTrace();
         }
         return title;
-    }
-
-
-    @Override
-    protected void onPostExecute(String result) {
-        //if you had a ui element, you could display the title
-    }
-}
-
-class MyTaskAPKMirror extends AsyncTask<Void, Void, String> {
-
-    @Override
-    protected String doInBackground(Void... params) {
-        String title ="";
-        Document doc;
-        try {
-            for (int i = 1; ; i++) {
-                doc = Jsoup.connect("https://www.apkmirror.com/uploads/page/"+i+"/?q=google-play-services").get();
-                Elements elements = doc.getElementsByClass("appRowVariantTag wrapText");
-
-                if (elements.size() == 0) // no div with class 'appRowVariantTag wrapText' found (page number exceeded)
-                    break;
-
-                for (Element e : elements) {
-                    String link = e.select("a[href]").first().attr("abs:href");
-                    System.out.println(link);
-
-                    verifyIfReleaseSuitsDeviceSpecs(link);
-
-                    // get href, execute download and install
-                }
-                title = doc.title();
-                System.out.print(title);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return title;
-    }
-
-    private void verifyIfReleaseSuitsDeviceSpecs(String link) throws IOException {
-        Document doc = Jsoup.connect(link).get();
-        Elements elements = doc.getElementsByClass("table-row headerFont");
-        elements.remove(0); // remove header
-        for (Element e : elements) {
-            Elements variantInfo = e.getElementsByClass("table-cell rowheight addseparator expand pad dowrap");
-            String[] archList = variantInfo.get(1).text().split("\\+");
-            
-            String minVersion = variantInfo.get(2).text(); // Android X.Y+
-            String[] minVersionParsed = minVersion.split("\\s"); // {Android, X.Y+}
-            String minVersionFinal = minVersionParsed[1].substring(0, minVersionParsed[1].length() - 1); // X.Y
-
-
-            System.out.println("");
-            // se pertence aos arch list
-            // se strcmp maior que o minversionfinal
-            // return true / false
-        }
     }
 
 

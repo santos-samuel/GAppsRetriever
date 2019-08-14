@@ -17,10 +17,11 @@ public class DownloadGPSPresenter {
     }
 
     public void downloadGPSRequestDirect() {
-        requestManager.downloadGooglePlayServicesDirect();
+        requestManager.downloadGooglePlayServicesDirect(null);
     }
 
-    public void checkHardwareInfo() {
+    public void toChangeNameLater() {
         requestManager.checkHardwareInfo();
+        requestManager.getFromApkMirror();
     }
 }

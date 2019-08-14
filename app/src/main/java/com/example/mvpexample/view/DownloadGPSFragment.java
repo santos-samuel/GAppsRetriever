@@ -53,7 +53,7 @@ public class DownloadGPSFragment extends Fragment implements IDownloadGPSView {
         View.OnClickListener btnToChangeNameLaterListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                presenter.checkHardwareInfo();
+                presenter.toChangeNameLater();
             }
         };
         btnToChangeNameLater.setOnClickListener(btnToChangeNameLaterListener);
