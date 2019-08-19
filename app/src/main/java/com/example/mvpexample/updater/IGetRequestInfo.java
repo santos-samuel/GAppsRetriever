@@ -1,4 +1,4 @@
-package com.example.mvpexample.model;
+package com.example.mvpexample.updater;
 
 public interface IGetRequestInfo {
     RequestStatus getmResult();

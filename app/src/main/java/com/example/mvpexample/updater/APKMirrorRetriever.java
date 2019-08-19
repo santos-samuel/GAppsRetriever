@@ -1,8 +1,7 @@
-package com.example.mvpexample.model;
+package com.example.mvpexample.updater;
 
-import android.os.AsyncTask;
-
-import com.example.mvpexample.model.APKMirror.*;
+import com.example.mvpexample.model.GenericCallback;
+import com.example.mvpexample.updater.APKMirror.*;
 import com.google.gson.Gson;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
@@ -17,7 +16,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-class MyTaskAPKMirror extends AsyncTask<Void, Void, String> implements IGetRequestInfo {
+public class APKMirrorRetriever implements IGetRequestInfo {
 
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     private static final String BaseUrl = "https://www.apkmirror.com/wp-json/apkm/v1/";
@@ -26,29 +25,24 @@ class MyTaskAPKMirror extends AsyncTask<Void, Void, String> implements IGetReque
     private static final String User = "api-apkupdater";
     private static final String Token = "rm5rcfruUjKy04sMpyMPJXW8";
     private DeviceSpecs deviceSpecs;
-    private RequestManager requestManager;
     private String mError;
     private RequestStatus mResult;
 
-    public MyTaskAPKMirror(DeviceSpecs deviceSpecs, RequestManager requestManager) {
+    public APKMirrorRetriever(DeviceSpecs deviceSpecs, GenericCallback callback) {
         this.deviceSpecs = deviceSpecs;
-        this.requestManager = requestManager;
-    }
-
-    @Override
-    protected String doInBackground(Void... params) {
 
         // Create the OkHttp client
         OkHttpClient client = getOkHttpClient();
         if (client == null) {
             mError = "Unable to get OkHttpError";
             mResult = RequestStatus.STATUS_ERROR;
-            return "";
+            return;
         }
 
         // Build the json object for the request
         List<String> pnames = new ArrayList<>();
         pnames.add("com.google.android.gms");
+
 
         AppExistsRequest json = new AppExistsRequest(
                 pnames,
@@ -71,13 +65,11 @@ class MyTaskAPKMirror extends AsyncTask<Void, Void, String> implements IGetReque
         } catch (Exception e) {
             mError = "Request failure: " + e;
             mResult = RequestStatus.STATUS_ERROR;
-            return "";
+            return;
         }
 
         if (appExistsResponseApk != null)
-            return appExistsResponseApk.getLink();
-        else
-            return "";
+            callback.onResult(appExistsResponseApk.getLink(), this);
     }
 
     private AppExistsResponseApk parseResponse(String body) {
@@ -92,22 +84,38 @@ class MyTaskAPKMirror extends AsyncTask<Void, Void, String> implements IGetReque
                 return null;
             }
 
-            AppExistsResponseData data = r.getData().get(0);
+            AppExistsResponseData data = getData(r, "com.google.android.gms");
 
             AppExistsResponseApk selectedApk = null;
 
-            for (AppExistsResponseApk apk : data.getApks()) {
-                if (deviceSpecs.supports(apk.getArches(), apk.getMinapi())) {
-                    // select
-                    selectedApk = apk;
-                    break;
+            if (data != null) {
+                for (AppExistsResponseApk apk : data.getApks()) {
+                    if (deviceSpecs.supports(apk.getArches(), apk.getMinapi())) {
+                        // select
+                        selectedApk = apk;
+                        break;
+                    }
                 }
+            } else {
+                // No updates found
             }
 
             return selectedApk;
 
         } catch(Exception e) {}
 
+        return null;
+    }
+
+    private AppExistsResponseData getData(
+            AppExistsResponse response,
+            String pname
+    ) {
+        for (AppExistsResponseData data : response.getData()) {
+            if (data.getPname().equals(pname)) {
+                return data;
+            }
+        }
         return null;
     }
 
@@ -134,12 +142,6 @@ class MyTaskAPKMirror extends AsyncTask<Void, Void, String> implements IGetReque
         } catch (Exception e) {
             return null;
         }
-    }
-
-
-    @Override
-    protected void onPostExecute(String link) {
-        requestManager.notifySearchCompleted(DownloadUrl + link, this);
     }
 
     @Override

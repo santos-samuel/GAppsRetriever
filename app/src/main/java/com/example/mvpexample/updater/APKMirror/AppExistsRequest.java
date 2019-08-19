@@ -1,4 +1,4 @@
-package com.example.mvpexample.model.APKMirror;
+package com.example.mvpexample.updater.APKMirror;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,6 @@ public class AppExistsRequest
         List<String> e = new ArrayList<>();
         e.add("alpha");
         e.add("beta");
-        e.add("rc");
         e.add("test");
         e.add("other");
         return e;

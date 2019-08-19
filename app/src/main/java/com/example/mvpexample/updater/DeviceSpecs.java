@@ -1,8 +1,8 @@
-package com.example.mvpexample.model;
+package com.example.mvpexample.updater;
 
 import java.util.List;
 
-class DeviceSpecs {
+public class DeviceSpecs {
 
     private final int osNumber;
     private final String[] supportedABIS;

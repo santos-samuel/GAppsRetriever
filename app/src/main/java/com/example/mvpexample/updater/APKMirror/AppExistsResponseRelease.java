@@ -1,19 +1,23 @@
-package com.example.mvpexample.model.APKMirror;
+package com.example.mvpexample.updater.APKMirror;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class AppExistsResponseApp
-{
+public class AppExistsResponseRelease {
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    @SerializedName("name")
+    @SerializedName("version")
     @Expose
-    private String name;
+    private String version;
 
-    @SerializedName("description")
+    @SerializedName("publish_date")
     @Expose
-    private String description;
+    private String publishDate;
+
+    @SerializedName("whats_new")
+    @Expose
+    private String whatsNew;
 
     @SerializedName("link")
     @Expose
@@ -21,32 +25,47 @@ public class AppExistsResponseApp
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public String getName(
+    public String getVersion(
     ) {
-        return name;
+        return version;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public void setName(
-            String name
+    public void setVersion(
+            String version
     ) {
-        this.name = name;
+        this.version = version;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public String getDescription(
+    public String getPublishDate(
     ) {
-        return description;
+        return publishDate;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public void setDescription(
-            String description
+    public void setPublishDate(
+            String publishDate
     ) {
-        this.description = description;
+        this.publishDate = publishDate;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public String getWhatsNew(
+    ) {
+        return whatsNew;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public void setWhatsNew(
+            String whatsNew
+    ) {
+        this.whatsNew = whatsNew;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -65,5 +84,4 @@ public class AppExistsResponseApp
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 }

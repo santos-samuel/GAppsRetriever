@@ -1,4 +1,4 @@
-package com.example.mvpexample.model.APKMirror;
+package com.example.mvpexample.updater.APKMirror;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

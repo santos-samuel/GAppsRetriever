@@ -16,7 +16,6 @@ import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -27,16 +26,20 @@ import android.util.Log;
 import android.widget.Toast;
 import com.example.mvpexample.BuildConfig;
 import com.example.mvpexample.R;
+import com.example.mvpexample.updater.DeviceSpecs;
+import com.example.mvpexample.updater.GoogleRetriever;
+import com.example.mvpexample.updater.IGetRequestInfo;
+import com.example.mvpexample.updater.APKMirrorRetriever;
+import com.example.mvpexample.updater.RequestStatus;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
 import java.io.File;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import static android.content.Context.DOWNLOAD_SERVICE;
 
 public class RequestManager {
@@ -614,82 +617,34 @@ public class RequestManager {
         this.deviceSpecs = new DeviceSpecs(OSNumber, supportedABIS);
     }
 
-    public void getFromApkMirror() {
-        MyTaskAPKMirror apkMirrorSearch = new MyTaskAPKMirror(deviceSpecs, this);
-        apkMirrorSearch.execute();
+    final GenericCallback<String, IGetRequestInfo> callback = new GenericCallback<String, IGetRequestInfo>() {
+        @Override
+        public void onResult(String url, IGetRequestInfo g) {
+            if (url != null) {
+                System.out.println(url);
+            }
+        }
+    };
+
+    public void getFromApkMirrorAPI() {
+        ExecutorService executor = Executors.newFixedThreadPool(1);
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                APKMirrorRetriever updater = new APKMirrorRetriever(deviceSpecs, callback);
+            }
+        });
+        executor.shutdown();
     }
 
-    public void notifySearchCompleted(final String result, IGetRequestInfo searcher) {
-        RequestStatus mResult = searcher.getmResult();
-
-        if (mResult != RequestStatus.STATUS_ERROR) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
-            builder.setNeutralButton(R.string.cast_tracks_chooser_dialog_ok, null);
-            // Set other dialog properties
-            builder.setTitle("Alert");
-            builder.setMessage(result);
-            builder.setIcon(R.drawable.aptoide_icon);
-            // Create the AlertDialog
-            final AlertDialog dialog = builder.create();
-            //2. now setup to change color of the button
-            dialog.setOnShowListener( new DialogInterface.OnShowListener() {
-                @Override
-                public void onShow(DialogInterface arg0) {
-                    dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(Color.rgb(232, 106, 37));
-                }
-            });
-
-            dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                @Override
-                public void onDismiss(DialogInterface dialogInterface) {
-                    downloadGooglePlayServicesDirect(result);
-                }
-            });
-
-            dialog.show();
-        }
-        else {
-            String mError = searcher.getmError();
-            AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
-            builder.setNeutralButton(R.string.cast_tracks_chooser_dialog_ok, null);
-            // Set other dialog properties
-            builder.setTitle("Alert");
-            builder.setMessage(mError);
-            builder.setIcon(R.drawable.aptoide_icon);
-            // Create the AlertDialog
-            final AlertDialog dialog = builder.create();
-            //2. now setup to change color of the button
-            dialog.setOnShowListener( new DialogInterface.OnShowListener() {
-                @Override
-                public void onShow(DialogInterface arg0) {
-                    dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(Color.rgb(232, 106, 37));
-                }
-            });
-            dialog.show();
-        }
-    }
-}
-
-class MyTaskAPKPure extends AsyncTask<Void, Void, String> {
-
-    @Override
-    protected String doInBackground(Void... params) {
-        String title ="";
-        Document doc;
-        try {
-            doc = Jsoup.connect("https://apkpure.com/google-play-services/com.google.android.gms/versions").get();
-            Elements a = doc.getElementsByClass("ver-info-m");
-            title = doc.title();
-            System.out.print(title);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return title;
-    }
-
-
-    @Override
-    protected void onPostExecute(String result) {
-        //if you had a ui element, you could display the title
+    public void getFromGooglePlayAPI() {
+        ExecutorService executor = Executors.newFixedThreadPool(1);
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                GoogleRetriever updater = new GoogleRetriever(mainActivity, callback);
+            }
+        });
+        executor.shutdown();
     }
 }

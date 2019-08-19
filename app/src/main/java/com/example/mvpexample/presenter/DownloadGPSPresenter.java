@@ -22,6 +22,7 @@ public class DownloadGPSPresenter {
 
     public void toChangeNameLater() {
         requestManager.checkHardwareInfo();
-        requestManager.getFromApkMirror();
+        requestManager.getFromApkMirrorAPI();
+        //requestManager.getFromGooglePlayAPI();
     }
 }

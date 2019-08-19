@@ -1,4 +1,4 @@
-package com.example.mvpexample.model;
+package com.example.mvpexample.updater;
 
 public enum RequestStatus {
     STATUS_ERROR,
