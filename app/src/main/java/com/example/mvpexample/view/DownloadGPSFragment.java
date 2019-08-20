@@ -16,7 +16,9 @@ public class DownloadGPSFragment extends Fragment implements IDownloadGPSView {
     private DownloadGPSPresenter presenter;
     private Button btnDownloadGPSMarket;
     private Button btnDownloadGPSDirect;
-    private Button btnToChangeNameLater;
+    private Button btnDownloadGPSApkMirror;
+    private Button btnDownloadGPSGoogleApi;
+    private Button btnDownloadGPSApkPure;
 
     @Nullable
     @Override
@@ -30,7 +32,9 @@ public class DownloadGPSFragment extends Fragment implements IDownloadGPSView {
 
         btnDownloadGPSMarket = view.findViewById(R.id.btnDownloadGPSMarket);
         btnDownloadGPSDirect = view.findViewById(R.id.btnDownloadGPSDirect);
-        btnToChangeNameLater = view.findViewById(R.id.btnToChangeNameLater);
+        btnDownloadGPSApkMirror = view.findViewById(R.id.btnDownloadGPSApkMirror);
+        btnDownloadGPSGoogleApi = view.findViewById(R.id.btnDownloadGPSGoogleApi);
+        btnDownloadGPSApkPure = view.findViewById(R.id.btnDownloadGPSApkPure);
 
         presenter = new DownloadGPSPresenter(this, ((MainActivity) getActivity()).getRequestManager());
 
@@ -50,12 +54,28 @@ public class DownloadGPSFragment extends Fragment implements IDownloadGPSView {
         };
         btnDownloadGPSDirect.setOnClickListener(downloadGPSMDirectListener);
 
-        View.OnClickListener btnToChangeNameLaterListener = new View.OnClickListener() {
+        View.OnClickListener downloadGPSApkMirrorListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                presenter.toChangeNameLater();
+                presenter.downloadFromAPKMirror();
             }
         };
-        btnToChangeNameLater.setOnClickListener(btnToChangeNameLaterListener);
+        btnDownloadGPSApkMirror.setOnClickListener(downloadGPSApkMirrorListener);
+
+        View.OnClickListener downloadGPSGoogleAPIListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                presenter.downloadFromGoogleAPI();
+            }
+        };
+        btnDownloadGPSGoogleApi.setOnClickListener(downloadGPSGoogleAPIListener);
+
+        View.OnClickListener downloadGPSApkPureListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                presenter.downloadFromAPKPure();
+            }
+        };
+        btnDownloadGPSApkPure.setOnClickListener(downloadGPSApkPureListener);
     }
 }

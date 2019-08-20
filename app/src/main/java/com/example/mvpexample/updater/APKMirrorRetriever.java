@@ -1,5 +1,6 @@
 package com.example.mvpexample.updater;
 
+import com.example.mvpexample.model.Constants;
 import com.example.mvpexample.model.GenericCallback;
 import com.example.mvpexample.updater.APKMirror.*;
 import com.google.gson.Gson;
@@ -36,12 +37,13 @@ public class APKMirrorRetriever implements IGetRequestInfo {
         if (client == null) {
             mError = "Unable to get OkHttpError";
             mResult = RequestStatus.STATUS_ERROR;
+            callback.onResult(null, null,this);
             return;
         }
 
         // Build the json object for the request
         List<String> pnames = new ArrayList<>();
-        pnames.add("com.google.android.gms");
+        pnames.add(Constants.GOOGLE_GPS_PACKAGE_NAME);
 
 
         AppExistsRequest json = new AppExistsRequest(
@@ -65,11 +67,14 @@ public class APKMirrorRetriever implements IGetRequestInfo {
         } catch (Exception e) {
             mError = "Request failure: " + e;
             mResult = RequestStatus.STATUS_ERROR;
+            callback.onResult(null, null,this);
             return;
         }
 
-        if (appExistsResponseApk != null)
-            callback.onResult(appExistsResponseApk.getLink(), this);
+        if (appExistsResponseApk != null) /* TO DO - VERSION NAME*/
+            callback.onResult(appExistsResponseApk.getLink(), null,this);
+        else
+            callback.onResult(null, null,this);
     }
 
     private AppExistsResponseApk parseResponse(String body) {
@@ -84,27 +89,30 @@ public class APKMirrorRetriever implements IGetRequestInfo {
                 return null;
             }
 
-            AppExistsResponseData data = getData(r, "com.google.android.gms");
+            AppExistsResponseData data = getData(r, Constants.GOOGLE_GPS_PACKAGE_NAME);
 
             AppExistsResponseApk selectedApk = null;
 
             if (data != null) {
                 for (AppExistsResponseApk apk : data.getApks()) {
-                    if (deviceSpecs.supports(apk.getArches(), apk.getMinapi())) {
-                        // select
+                    if ( deviceSpecs.supports(apk.getArches(), Integer.valueOf(apk.getMinapi())) ) {
                         selectedApk = apk;
                         break;
                     }
                 }
             } else {
-                // No updates found
+                mError = "No updates found.";
+                mResult = RequestStatus.STATUS_OK;
+                return null;
             }
 
             return selectedApk;
 
-        } catch(Exception e) {}
-
-        return null;
+        } catch(Exception e) {
+            mError = "No updates found.";
+            mResult = RequestStatus.STATUS_OK;
+            return null;
+        }
     }
 
     private AppExistsResponseData getData(

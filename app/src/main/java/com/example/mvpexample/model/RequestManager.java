@@ -26,11 +26,12 @@ import android.util.Log;
 import android.widget.Toast;
 import com.example.mvpexample.BuildConfig;
 import com.example.mvpexample.R;
+import com.example.mvpexample.updater.APKMirrorRetriever2;
+import com.example.mvpexample.updater.APKPureRetriever;
 import com.example.mvpexample.updater.DeviceSpecs;
 import com.example.mvpexample.updater.GoogleRetriever;
 import com.example.mvpexample.updater.IGetRequestInfo;
 import com.example.mvpexample.updater.APKMirrorRetriever;
-import com.example.mvpexample.updater.RequestStatus;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -45,14 +46,9 @@ import static android.content.Context.DOWNLOAD_SERVICE;
 public class RequestManager {
 
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 90;
-
-    private static final String GPS_FILE_NAME = "gps";
+    private static final String GPS_FILE_NAME = "gps.apk";
     private static final String PATH_TO_GPS_APK = Environment.getExternalStorageDirectory() + "/.aptoide/" + GPS_FILE_NAME;
-
     private static final String GOOGLE_PLAY_SERVICES_LINK_MARKET = "https://perkhidmatan-google-play.en.aptoide.com/";
-
-    // TO DO
-    private static final String GOOGLE_PLAY_SERVICES_LINK_DIRECT = "https://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=762848";
 
     private final ContentResolver contentResolver;
     private final Activity mainActivity;
@@ -332,19 +328,22 @@ public class RequestManager {
 
     private void installAPK(String pathToApk) {
         Log.d("TAG", "Install APK!");
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            Uri apkUri = FileProvider.getUriForFile(mainActivity, BuildConfig.APPLICATION_ID + ".provider", new File(pathToApk));
-            Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
-            intent.setData(apkUri);
-            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            mainActivity.startActivity(intent);
-        } else {
-            Uri apkUri = Uri.fromFile(new File(pathToApk));
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(apkUri, "application/vnd.android.package-archive");
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            mainActivity.startActivity(intent);
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                Uri apkUri = FileProvider.getUriForFile(mainActivity, BuildConfig.APPLICATION_ID + ".provider", new File(pathToApk));
+                Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
+                intent.setData(apkUri);
+                intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                mainActivity.startActivity(intent);
+            } else {
+                Uri apkUri = Uri.fromFile(new File(pathToApk));
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setDataAndType(apkUri, "application/vnd.android.package-archive");
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                mainActivity.startActivity(intent);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
     }
 
@@ -352,16 +351,20 @@ public class RequestManager {
     private BroadcastReceiver onDownloadComplete = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            //Fetching the download id received with the broadcast
-            long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-            //Checking if the received broadcast is for our enqueued download by matching download id
-            if (downloadID == id) {
-                Log.d("DOWNLOAD", "Download GPS completed.");
-                Toast.makeText(mainActivity, "Download Completed", Toast.LENGTH_SHORT).show();
-                installAPK(PATH_TO_GPS_APK);
-            }
+            try {
+                //Fetching the download id received with the broadcast
+                long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+                //Checking if the received broadcast is for our enqueued download by matching download id
+                if (downloadID == id) {
+                    Log.d("DOWNLOAD", "Download GPS completed.");
+                    Toast.makeText(mainActivity, "Download Completed", Toast.LENGTH_SHORT).show();
+                    installAPK(PATH_TO_GPS_APK);
+                }
 
-            //mainActivity.unregisterReceiver(onDownloadComplete); // Where should i put this?
+                //mainActivity.unregisterReceiver(onDownloadComplete); // Where should i put this?
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
         }
     };
 
@@ -459,7 +462,7 @@ public class RequestManager {
             public void onClick(DialogInterface dialog, int id) {
                 Intent openGPSSettings = new Intent();
                 openGPSSettings.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                Uri uri = Uri.fromParts("package", "com.google.android.gms", null);
+                Uri uri = Uri.fromParts("package", Constants.GOOGLE_GPS_PACKAGE_NAME, null);
                 openGPSSettings.setData(uri);
                 mainActivity.startActivity(openGPSSettings);
             }
@@ -592,6 +595,7 @@ public class RequestManager {
         final String DEBUG_TAG_ARC = "Supported ABIS";
 
         int OSNumber = Build.VERSION.SDK_INT;
+        String release = Build.VERSION.RELEASE;
         String[] supportedABIS = null;
 
         Toast.makeText(mainActivity, "API: "+ OSNumber, Toast.LENGTH_SHORT).show();
@@ -614,24 +618,108 @@ public class RequestManager {
             }
         }
 
-        this.deviceSpecs = new DeviceSpecs(OSNumber, supportedABIS);
+
+        String installedGPSVersionName = null;
+        int installedGPSVersionCode = -1;
+        try {
+            PackageInfo pinfo = mainActivity.getPackageManager().getPackageInfo("com.google.android.gms", 0);
+            installedGPSVersionName = parseInstalledGPSVersionName(pinfo.versionName);
+            installedGPSVersionCode = pinfo.versionCode;
+        } catch (PackageManager.NameNotFoundException ignored) {/* should never happen */}
+
+        this.deviceSpecs = new DeviceSpecs(OSNumber, release, supportedABIS, installedGPSVersionName, installedGPSVersionCode);
     }
 
-    final GenericCallback<String, IGetRequestInfo> callback = new GenericCallback<String, IGetRequestInfo>() {
-        @Override
-        public void onResult(String url, IGetRequestInfo g) {
-            if (url != null) {
-                System.out.println(url);
-            }
+    private String parseInstalledGPSVersionName(String versionName) {
+        String[] s = versionName.split(" ");
+        return s[0].trim();
+    }
+
+    private boolean isToDownloadApkMoreRecentThanInstalledApk(String _toDownloadVersionName) {
+        // we need toDownloadVersionName >= installedGPSVersionName
+        String[] installedVersion = this.deviceSpecs.getInstalledGPSVersionName().split("\\.");
+        String[] toDownloadVersion = _toDownloadVersionName.split("\\.");
+
+        int len = Math.min(installedVersion.length, toDownloadVersion.length);
+
+        for (int i = 0; i < len; i++) {
+            int r1 = Integer.parseInt(installedVersion[i]);
+            int r2 = Integer.parseInt(toDownloadVersion[i]);
+
+            if (r1 < r2)
+                return true;
+            if (r1 == r2)
+                continue;
+            if (r1 > r2)
+                return false;
         }
-    };
+        return true; // always continued
+    }
+
+    private boolean isToDownloadApkMoreRecentThanInstalledApk(int toDownloadVersionCode) {
+        Log.d("INSTALLED_GPS", String.valueOf(this.deviceSpecs.getInstalledGPSVersionCode()));
+        return toDownloadVersionCode > this.deviceSpecs.getInstalledGPSVersionCode();
+    }
+
+    private final GenericCallback<String, Object, IGetRequestInfo> callbackConsideringVersionName =
+            new GenericCallback<String, Object, IGetRequestInfo>() {
+                @Override
+                public void onResult(String url, Object toDownloadVersionNameO, IGetRequestInfo g) {
+                    if (url != null && toDownloadVersionNameO != null && g != null) {
+                        String toDownloadVersionName = (String) toDownloadVersionNameO;
+                        System.out.println(url);
+                        System.out.println(toDownloadVersionName);
+
+                        if (!isToDownloadApkMoreRecentThanInstalledApk(toDownloadVersionName))
+                            Log.d("TAG", "The version found is not recent");
+                        else
+                            downloadGooglePlayServicesDirect(url);
+                    }
+                    else {
+                        Log.d("ERROR", g.getmError());
+                        Log.d("RESULT", String.valueOf(g.getmResult()));
+                    }
+                }
+            };
+
+    private final GenericCallback<String, Object, IGetRequestInfo> callbackConsideringVersionCode =
+            new GenericCallback<String, Object, IGetRequestInfo>() {
+                @Override
+                public void onResult(String url, Object toDownloadVersionCodeO, IGetRequestInfo g) {
+                    if (url != null && toDownloadVersionCodeO != null && g != null) {
+                        int toDownloadVersionCode = (int) toDownloadVersionCodeO;
+                        System.out.println(url);
+                        System.out.println(toDownloadVersionCode);
+
+                        if (!isToDownloadApkMoreRecentThanInstalledApk(toDownloadVersionCode))
+                            Log.d("TAG", "The version found is not recent");
+                        else
+                            downloadGooglePlayServicesDirect(url);
+                    }
+                    else {
+                        Log.d("ERROR", g.getmError());
+                        Log.d("RESULT", String.valueOf(g.getmResult()));
+                    }
+                }
+            };
 
     public void getFromApkMirrorAPI() {
         ExecutorService executor = Executors.newFixedThreadPool(1);
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                APKMirrorRetriever updater = new APKMirrorRetriever(deviceSpecs, callback);
+                new APKMirrorRetriever(deviceSpecs, callbackConsideringVersionName);
+            }
+        });
+        executor.shutdown();
+    }
+
+    public void getFromApkMirror() {
+        ExecutorService executor = Executors.newFixedThreadPool(1);
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                new APKMirrorRetriever2(deviceSpecs, callbackConsideringVersionName);
             }
         });
         executor.shutdown();
@@ -642,7 +730,18 @@ public class RequestManager {
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                GoogleRetriever updater = new GoogleRetriever(mainActivity, callback);
+                new GoogleRetriever(mainActivity, callbackConsideringVersionCode);
+            }
+        });
+        executor.shutdown();
+    }
+
+    public void getFromApkPure() {
+        ExecutorService executor = Executors.newFixedThreadPool(1);
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                new APKPureRetriever(deviceSpecs, callbackConsideringVersionName);
             }
         });
         executor.shutdown();

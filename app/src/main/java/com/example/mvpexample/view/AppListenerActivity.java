@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.mvpexample.model.Constants;
 import com.example.mvpexample.model.RequestManager;
 
 public class AppListenerActivity extends AppCompatActivity {
@@ -22,7 +23,7 @@ public class AppListenerActivity extends AppCompatActivity {
 
         Log.d("INSTALLED APP", installedPackageName);
 
-        if (installedPackageName.equals("com.google.android.gms")) {
+        if (installedPackageName.equals(Constants.GOOGLE_GPS_PACKAGE_NAME)) {
             //requestManager.deleteApkFileOnStorage();
         }
 

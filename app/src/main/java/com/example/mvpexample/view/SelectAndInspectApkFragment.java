@@ -1,5 +1,6 @@
 package com.example.mvpexample.view;
 
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -10,6 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.example.mvpexample.R;
 import com.example.mvpexample.presenter.ISelectAndInspectApkView;
 import com.example.mvpexample.presenter.SelectAndInspectApkPresenter;
@@ -45,8 +48,12 @@ public class SelectAndInspectApkFragment extends Fragment implements ISelectAndI
             public void onClick(View v) {
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("application/vnd.android.package-archive"); // select apk extension files only
-                //intent.setType("*/*");
-                startActivityForResult(intent, PICKAPK_RESULT_CODE);
+                try {
+                    startActivityForResult(intent, PICKAPK_RESULT_CODE);
+                } catch (ActivityNotFoundException e){
+                    Toast.makeText(getActivity(), "There are no file explorer clients installed.", Toast.LENGTH_SHORT).show();
+                }
+
             }
         };
         btnSearchFile.setOnClickListener(searchFileListener);

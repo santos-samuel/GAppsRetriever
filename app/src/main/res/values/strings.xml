@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="cast_tracks_chooser_dialog_yes">YES</string>
-    <string name="cast_tracks_chooser_dialog_no">YES</string>
+    <string name="cast_tracks_chooser_dialog_no">NO</string>
     <string name="app_name">MVPExample</string>
 </resources>

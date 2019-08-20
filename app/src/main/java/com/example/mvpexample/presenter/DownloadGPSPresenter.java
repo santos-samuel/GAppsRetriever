@@ -20,9 +20,18 @@ public class DownloadGPSPresenter {
         requestManager.downloadGooglePlayServicesDirect(null);
     }
 
-    public void toChangeNameLater() {
-        requestManager.checkHardwareInfo();
-        requestManager.getFromApkMirrorAPI();
-        //requestManager.getFromGooglePlayAPI();
+    public void downloadFromAPKMirror() {
+        requestManager.checkHardwareInfo(); // sets device specs
+        requestManager.getFromApkMirror();
+    }
+
+    public void downloadFromGoogleAPI() {
+        requestManager.checkHardwareInfo(); // sets device specs
+        requestManager.getFromGooglePlayAPI();
+    }
+
+    public void downloadFromAPKPure() {
+        requestManager.checkHardwareInfo(); // sets device specs
+        requestManager.getFromApkPure();
     }
 }

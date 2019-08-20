@@ -18,8 +18,20 @@
         android:text="Download GPS Direct" />
 
     <Button
-        android:id="@+id/btnToChangeNameLater"
+        android:id="@+id/btnDownloadGPSApkMirror"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Button" />
+        android:text="APKMirror" />
+
+    <Button
+        android:id="@+id/btnDownloadGPSGoogleApi"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="GoogleAPI" />
+
+    <Button
+        android:id="@+id/btnDownloadGPSApkPure"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="APKPure" />
 </LinearLayout>

@@ -4,14 +4,12 @@ import com.github.yeriomin.playstoreapi.AuthException;
 import com.github.yeriomin.playstoreapi.GooglePlayAPI;
 import com.github.yeriomin.playstoreapi.GooglePlayException;
 import com.github.yeriomin.playstoreapi.HttpClientAdapter;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.FormBody;
