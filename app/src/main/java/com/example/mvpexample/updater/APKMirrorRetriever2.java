@@ -62,8 +62,7 @@ public class APKMirrorRetriever2 implements IGetRequestInfo {
 
         doc = Jsoup.connect(thankYouPage).get();
         elements = doc.getElementsByClass("notes");
-        String downloadLink = elements.select("a[href]").attr("abs:href");
-        return downloadLink;
+        return elements.select("a[href]").attr("abs:href");
     }
 
     private String[] verifyIfReleaseSuitsDeviceSpecs(String link, DeviceSpecs deviceSpecs) throws IOException {
@@ -80,12 +79,11 @@ public class APKMirrorRetriever2 implements IGetRequestInfo {
             if (!deviceSpecs.supports(archList, release))
                 continue;
 
-            // found compatible update
+            // else, found compatible update
             Element variantElement = variantInfo.get(0);
             String releaseDownloadPage = variantElement.select("a[href]").first().attr("abs:href");
             String versionName = parseVersionName(variantElement.select("a").text());
-            String[] retValue = new String[] {releaseDownloadPage, versionName};
-            return retValue;
+            return new String[] {releaseDownloadPage, versionName};
         }
         return null;
     }

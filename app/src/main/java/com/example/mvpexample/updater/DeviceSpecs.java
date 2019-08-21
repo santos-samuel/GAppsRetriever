@@ -4,14 +4,14 @@ import java.util.List;
 
 public class DeviceSpecs {
 
-    private final int osNumber;
+    private final int deviceApi;
     private final String release;
     private final String[] supportedABIS;
     private final String installedGPSVersionName;
     private final int installedGPSVersionCode;
 
-    public DeviceSpecs(int osNumber, String release, String[] supportedABIS, String installedGPSVersionName, int installedGPSVersionCode) {
-        this.osNumber = osNumber;
+    public DeviceSpecs(int deviceApi, String release, String[] supportedABIS, String installedGPSVersionName, int installedGPSVersionCode) {
+        this.deviceApi = deviceApi;
         this.release = release;
         this.supportedABIS = supportedABIS;
         this.installedGPSVersionName = installedGPSVersionName;
@@ -26,8 +26,8 @@ public class DeviceSpecs {
         return installedGPSVersionName;
     }
 
-    public int getOsNumber() {
-        return osNumber;
+    public int getDeviceApi() {
+        return deviceApi;
     }
 
     public String[] getSupportedABIS() {
@@ -42,7 +42,7 @@ public class DeviceSpecs {
         for (String apkArch : arches) {
             for (String supportedArch : supportedABIS) {
                 if (apkArch.equals(supportedArch)) {
-                    if (osNumber >= minapi) {
+                    if (deviceApi >= minapi) {
                         return true;
                     }
                 }
@@ -83,6 +83,6 @@ public class DeviceSpecs {
             if (r1 < r2)
                 return false;
         }
-        return true; // always continued
+        return true; // always continued (equal version)
     }
 }

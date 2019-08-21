@@ -13,6 +13,8 @@ import com.github.yeriomin.playstoreapi.DetailsResponse;
 import com.github.yeriomin.playstoreapi.DocV2;
 import com.github.yeriomin.playstoreapi.DocumentDetails;
 import com.github.yeriomin.playstoreapi.GooglePlayAPI;
+import com.github.yeriomin.playstoreapi.UploadDeviceConfigResponse;
+
 import java.io.IOException;
 
 public class GoogleRetriever implements IGetRequestInfo {
@@ -31,6 +33,8 @@ public class GoogleRetriever implements IGetRequestInfo {
                 callback.onResult(null, null, this);
                 return;
             }
+
+            //UploadDeviceConfigResponse uploadDeviceConfigResponse = mApi.uploadDeviceConfig();
 
             DetailsResponse response = mApi.details(Constants.GOOGLE_GPS_PACKAGE_NAME);
             if (response == null) {

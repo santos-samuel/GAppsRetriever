@@ -594,15 +594,15 @@ public class RequestManager {
     public void checkHardwareInfo() {
         final String DEBUG_TAG_ARC = "Supported ABIS";
 
-        int OSNumber = Build.VERSION.SDK_INT;
+        int deviceApi = Build.VERSION.SDK_INT;
         String release = Build.VERSION.RELEASE;
         String[] supportedABIS = null;
 
-        Toast.makeText(mainActivity, "API: "+ OSNumber, Toast.LENGTH_SHORT).show();
-        Log.d(DEBUG_TAG_ARC, "API: "+OSNumber);
+        Toast.makeText(mainActivity, "API: "+ deviceApi, Toast.LENGTH_SHORT).show();
+        Log.d(DEBUG_TAG_ARC, "API: "+deviceApi);
 
 
-        if(OSNumber < Build.VERSION_CODES.LOLLIPOP ) {
+        if(deviceApi < Build.VERSION_CODES.LOLLIPOP ) {
             supportedABIS = new String[]{Build.CPU_ABI, Build.CPU_ABI2};
 
             for (String s : supportedABIS) {
@@ -610,7 +610,7 @@ public class RequestManager {
             }
         }
 
-        if(OSNumber >= Build.VERSION_CODES.LOLLIPOP ) {
+        if(deviceApi >= Build.VERSION_CODES.LOLLIPOP ) {
             supportedABIS = Build.SUPPORTED_ABIS;
 
             for (String s : supportedABIS) {
@@ -627,7 +627,7 @@ public class RequestManager {
             installedGPSVersionCode = pinfo.versionCode;
         } catch (PackageManager.NameNotFoundException ignored) {/* should never happen */}
 
-        this.deviceSpecs = new DeviceSpecs(OSNumber, release, supportedABIS, installedGPSVersionName, installedGPSVersionCode);
+        this.deviceSpecs = new DeviceSpecs(deviceApi, release, supportedABIS, installedGPSVersionName, installedGPSVersionCode);
     }
 
     private String parseInstalledGPSVersionName(String versionName) {
@@ -741,7 +741,7 @@ public class RequestManager {
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                new APKPureRetriever(deviceSpecs, callbackConsideringVersionName);
+                new APKPureRetriever(deviceSpecs, callbackConsideringVersionCode);
             }
         });
         executor.shutdown();

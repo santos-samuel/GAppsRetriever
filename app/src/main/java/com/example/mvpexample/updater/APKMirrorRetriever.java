@@ -71,8 +71,10 @@ public class APKMirrorRetriever implements IGetRequestInfo {
             return;
         }
 
-        if (appExistsResponseApk != null) /* TO DO - VERSION NAME*/
-            callback.onResult(appExistsResponseApk.getLink(), null,this);
+        if (appExistsResponseApk != null) { /* TO DO - VERSION NAME*/
+            callback.onResult(appExistsResponseApk.getLink(), null, this);
+            return;
+        }
         else
             callback.onResult(null, null,this);
     }
