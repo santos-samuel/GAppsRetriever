@@ -1,11 +1,8 @@
 package com.example.mvpexample.view;
 
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.Toast;
+
 import com.example.mvpexample.R;
-import com.example.mvpexample.model.Constants;
 import com.example.mvpexample.model.FragmentNavigator;
 import com.example.mvpexample.model.RequestManager;
 
@@ -16,22 +13,22 @@ public class AppListenerActivity extends MainActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        /*super.onCreate(savedInstanceState);
-
-        this.fragNavigator = new FragmentNavigator(this); // init navigator with main activity
-
-        this.requestManager = new RequestManager(null, getPackageManager(), getContentResolver(), this);
+        super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_app_listener);
-        DownloadFragment fragment = new DownloadFragment();
+
+
+        this.requestManager = new RequestManager(null, getPackageManager(), getContentResolver(), this);
+        this.fragNavigator = new FragmentNavigator(this); // init navigator with main activity
+        DownloadFromServiceFragment fragment = new DownloadFromServiceFragment();
         Bundle bundle = new Bundle();
         bundle.putString("installedPackageName", getIntent().getExtras().getString("installedPackageName"));
         fragment.setArguments(bundle);
+
         this.fragNavigator.navigateTo(fragment, true);
 
-*/
 
-        super.onCreate(savedInstanceState);
+        /*super.onCreate(savedInstanceState);
 
         String installedPackageName = getIntent().getExtras().getString("installedPackageName");
 
@@ -58,7 +55,7 @@ public class AppListenerActivity extends MainActivity {
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
             }
-        }
+        }*/
 
     }
 }

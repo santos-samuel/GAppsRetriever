@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.mvpexample.R;
 import com.example.mvpexample.presenter.CheckGooglePlayServicesPresenter;
@@ -59,5 +60,10 @@ public class CheckGooglePlayServicesFragment extends Fragment implements ICheckG
     @Override
     public void showIfSelectedAppNeedsGooglePlayServices(String info) {
         txtIfAppNeedsGPS.setText(info);
+    }
+
+    @Override
+    public void showToastMessage(String m) {
+        Toast.makeText(getActivity(), m, Toast.LENGTH_SHORT).show();
     }
 }

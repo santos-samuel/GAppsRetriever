@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
 
         init();
 
-        appListenerService = new AppListenerService();
+       appListenerService = new AppListenerService();
         appListenerIntent = new Intent(this, appListenerService.getClass());
         if (!isMyServiceRunning(appListenerService.getClass())) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
