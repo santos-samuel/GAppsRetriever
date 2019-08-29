@@ -1,6 +1,7 @@
 package com.example.mvpexample.presenter;
 
 import android.content.pm.PackageManager;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -8,6 +9,7 @@ import com.example.mvpexample.model.Constants;
 import com.example.mvpexample.model.FragmentNavigator;
 import com.example.mvpexample.model.RequestManager;
 import com.example.mvpexample.view.DownloadFromServiceFragment;
+import com.example.mvpexample.view.SelectAndInspectApkFragment;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
@@ -75,5 +77,9 @@ public class DownloadFromServicePresenter {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void changeFragment(Fragment newFrag) {
+        fragNavigator.navigateTo(newFrag, false);
     }
 }

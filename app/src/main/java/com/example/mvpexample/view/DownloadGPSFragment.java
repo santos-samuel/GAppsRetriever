@@ -15,7 +15,6 @@ import com.example.mvpexample.presenter.IDownloadGPSView;
 public class DownloadGPSFragment extends Fragment implements IDownloadGPSView {
     private DownloadGPSPresenter presenter;
     private Button btnDownloadGPSMarket;
-    private Button btnDownloadGPSDirect;
     private Button btnDownloadGPSApkMirror;
     private Button btnDownloadGPSGoogleApi;
     private Button btnDownloadGPSApkPure;
@@ -31,7 +30,6 @@ public class DownloadGPSFragment extends Fragment implements IDownloadGPSView {
         super.onViewCreated(view, savedInstanceState);
 
         btnDownloadGPSMarket = view.findViewById(R.id.btnDownloadGPSMarket);
-        btnDownloadGPSDirect = view.findViewById(R.id.btnDownloadGPSDirect);
         btnDownloadGPSApkMirror = view.findViewById(R.id.btnDownloadGPSApkMirror);
         btnDownloadGPSGoogleApi = view.findViewById(R.id.btnDownloadGPSGoogleApi);
         btnDownloadGPSApkPure = view.findViewById(R.id.btnDownloadGPSApkPure);
@@ -45,14 +43,6 @@ public class DownloadGPSFragment extends Fragment implements IDownloadGPSView {
             }
         };
         btnDownloadGPSMarket.setOnClickListener(downloadGPSMarketListener);
-
-        View.OnClickListener downloadGPSMDirectListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                presenter.downloadGPSRequestDirect();
-            }
-        };
-        btnDownloadGPSDirect.setOnClickListener(downloadGPSMDirectListener);
 
         View.OnClickListener downloadGPSApkMirrorListener = new View.OnClickListener() {
             @Override

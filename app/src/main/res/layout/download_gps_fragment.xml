@@ -10,13 +10,6 @@
         android:layout_height="wrap_content"
         android:text="Download GPS Market" />
 
-
-    <Button
-        android:id="@+id/btnDownloadGPSDirect"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Download GPS Direct" />
-
     <Button
         android:id="@+id/btnDownloadGPSApkMirror"
         android:layout_width="wrap_content"

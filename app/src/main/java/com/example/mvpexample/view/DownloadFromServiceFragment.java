@@ -58,13 +58,13 @@ public class DownloadFromServiceFragment extends Fragment implements IDownloadFr
         // Add the buttons
         builder.setPositiveButton(R.string.cast_tracks_chooser_dialog_yes, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                //downloadGooglePlayServicesMarket();
+                presenter.changeFragment(new DownloadGPSFragment());
             }
         });
 
         builder.setNegativeButton(R.string.cast_tracks_chooser_dialog_no, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                // User cancelled the dialog
+                finishActivity(); // user cancelled the dialog
             }
         });
 
@@ -85,13 +85,6 @@ public class DownloadFromServiceFragment extends Fragment implements IDownloadFr
             public void onShow(DialogInterface arg0) {
                 dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.rgb(232, 106, 37));
                 dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.rgb(232, 106, 37));
-            }
-        });
-
-        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialogInterface) {
-                finishActivity();
             }
         });
 
