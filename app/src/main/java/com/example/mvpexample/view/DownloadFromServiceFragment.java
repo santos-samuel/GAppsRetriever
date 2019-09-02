@@ -97,12 +97,23 @@ public class DownloadFromServiceFragment extends Fragment implements IDownloadFr
     public void showDeviceNotSupportedDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         // Add the buttons
-        builder.setNeutralButton(R.string.cast_tracks_chooser_dialog_ok, null);
+        builder.setPositiveButton(R.string.cast_tracks_chooser_dialog_yes, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                presenter.downloadGPSAndInstallPack();
+            }
+        });
+
+        builder.setNegativeButton(R.string.cast_tracks_chooser_dialog_no, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                finishActivity(); // user cancelled the dialog
+            }
+        });
 
         // Set other dialog properties
         builder.setTitle("Alert");
         builder.setMessage("The installed app contains features that may not " +
-                "work without Google Play Services, which are not supported by your device.");
+                "work without Google Play Services. Do you want Aptoide to make Google Play Services " +
+                "available on your device?");
 
         builder.setIcon(R.drawable.aptoide_icon);
 
@@ -113,7 +124,8 @@ public class DownloadFromServiceFragment extends Fragment implements IDownloadFr
         dialog.setOnShowListener( new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface arg0) {
-                dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(Color.rgb(232, 106, 37));
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.rgb(232, 106, 37));
+                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.rgb(232, 106, 37));
             }
         });
 
@@ -138,7 +150,7 @@ public class DownloadFromServiceFragment extends Fragment implements IDownloadFr
             public void onClick(DialogInterface dialog, int id) {
                 Intent openGPSSettings = new Intent();
                 openGPSSettings.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                Uri uri = Uri.fromParts("package", Constants.GOOGLE_GPS_PACKAGE_NAME, null);
+                Uri uri = Uri.fromParts("package", Constants.GOOGLE_PLAY_SERVICES_PACKAGE_NAME, null);
                 openGPSSettings.setData(uri);
                 getActivity().startActivity(openGPSSettings);
             }

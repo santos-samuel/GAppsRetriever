@@ -1,6 +1,8 @@
 package com.example.mvpexample.view;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import com.example.mvpexample.R;
 import com.example.mvpexample.model.FragmentNavigator;
@@ -36,7 +38,7 @@ public class AppListenerActivity extends MainActivity {
 
         Log.d("INSTALLED APP", installedPackageName);
 
-        if (installedPackageName.equals(Constants.GOOGLE_GPS_PACKAGE_NAME)) {
+        if (installedPackageName.equals(Constants.GOOGLE_PLAY_SERVICES_PACKAGE_NAME)) {
             //requestManager.deleteApkFileOnStorage();
         }
 
@@ -57,5 +59,21 @@ public class AppListenerActivity extends MainActivity {
             }
         }*/
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // requestCode == 1 means the result for package-installer activity
+        if (requestCode == 51)
+        {
+            // resultCode == RESULT_CANCELED means user pressed `Done` button
+            if (resultCode == RESULT_CANCELED) {
+                Toast.makeText(this, "User pressed 'Done' button", Toast.LENGTH_SHORT).show();
+            }
+            else if (resultCode == RESULT_OK) {
+                // resultCode == RESULT_OK means user pressed `Open` button
+                Toast.makeText(this, "User pressed 'Open' button", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }

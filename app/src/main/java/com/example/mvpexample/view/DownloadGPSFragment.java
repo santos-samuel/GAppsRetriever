@@ -18,6 +18,7 @@ public class DownloadGPSFragment extends Fragment implements IDownloadGPSView {
     private Button btnDownloadGPSApkMirror;
     private Button btnDownloadGPSGoogleApi;
     private Button btnDownloadGPSApkPure;
+    private Button btnDownloadPack;
 
     @Nullable
     @Override
@@ -33,8 +34,9 @@ public class DownloadGPSFragment extends Fragment implements IDownloadGPSView {
         btnDownloadGPSApkMirror = view.findViewById(R.id.btnDownloadGPSApkMirror);
         btnDownloadGPSGoogleApi = view.findViewById(R.id.btnDownloadGPSGoogleApi);
         btnDownloadGPSApkPure = view.findViewById(R.id.btnDownloadGPSApkPure);
+        btnDownloadPack = view.findViewById(R.id.btnDownloadPack);
 
-        presenter = new DownloadGPSPresenter(this, ((MainActivity) getActivity()).getRequestManager());
+        presenter = new DownloadGPSPresenter(this, ((MainActivity) getActivity()).getRequestManager(), ((MainActivity) getActivity()).getFragNavigator());
 
         View.OnClickListener downloadGPSMarketListener = new View.OnClickListener() {
             @Override
@@ -47,7 +49,7 @@ public class DownloadGPSFragment extends Fragment implements IDownloadGPSView {
         View.OnClickListener downloadGPSApkMirrorListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                presenter.downloadFromAPKMirror();
+                presenter.downloadGPSFromAPKMirror();
             }
         };
         btnDownloadGPSApkMirror.setOnClickListener(downloadGPSApkMirrorListener);
@@ -67,5 +69,13 @@ public class DownloadGPSFragment extends Fragment implements IDownloadGPSView {
             }
         };
         btnDownloadGPSApkPure.setOnClickListener(downloadGPSApkPureListener);
+
+        View.OnClickListener downloadPackListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                presenter.downloadGoogleAppsPack();
+            }
+        };
+        btnDownloadPack.setOnClickListener(downloadPackListener);
     }
 }

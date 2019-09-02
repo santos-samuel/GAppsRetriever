@@ -186,7 +186,7 @@ public class NativeDeviceInfoProvider implements DeviceInfoProvider {
 
     static public int getGsfVersionCode(Context context) {
         try {
-            int versionCode = context.getPackageManager().getPackageInfo(Constants.GOOGLE_GPS_PACKAGE_NAME, 0).versionCode;
+            int versionCode = context.getPackageManager().getPackageInfo(Constants.GOOGLE_PLAY_SERVICES_PACKAGE_NAME, 0).versionCode;
             return versionCode > GOOGLE_SERVICES_VERSION_CODE ? versionCode : GOOGLE_SERVICES_VERSION_CODE;
         } catch (PackageManager.NameNotFoundException e) {
             return GOOGLE_SERVICES_VERSION_CODE;

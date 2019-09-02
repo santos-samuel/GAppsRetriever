@@ -7,23 +7,15 @@ public class DeviceSpecs {
     private final int deviceApi;
     private final String release;
     private final String[] supportedABIS;
-    private final String installedGPSVersionName;
-    private final int installedGPSVersionCode;
 
     public DeviceSpecs(int deviceApi, String release, String[] supportedABIS, String installedGPSVersionName, int installedGPSVersionCode) {
         this.deviceApi = deviceApi;
         this.release = release;
         this.supportedABIS = supportedABIS;
-        this.installedGPSVersionName = installedGPSVersionName;
-        this.installedGPSVersionCode = installedGPSVersionCode;
     }
 
     public String getRelease() {
         return release;
-    }
-
-    public String getInstalledGPSVersionName() {
-        return installedGPSVersionName;
     }
 
     public int getDeviceApi() {
@@ -34,16 +26,18 @@ public class DeviceSpecs {
         return supportedABIS;
     }
 
-    public int getInstalledGPSVersionCode() {
-        return installedGPSVersionCode;
-    }
-
     public boolean supports(List<String> arches, int minapi) {
-        for (String apkArch : arches) {
-            for (String supportedArch : supportedABIS) {
-                if (apkArch.equals(supportedArch)) {
-                    if (deviceApi >= minapi) {
-                        return true;
+        if (arches == null || minapi == -1)
+            return false;
+
+        if (arches.get(0).equals("noarch") || arches.get(0).equals("universal"))
+            return deviceApi >= minapi;
+
+        else {
+            for (String apkArch : arches) {
+                for (String supportedArch : supportedABIS) {
+                    if (apkArch.equals(supportedArch)) {
+                        return deviceApi >= minapi;
                     }
                 }
             }
@@ -53,11 +47,18 @@ public class DeviceSpecs {
     }
 
     public boolean supports(List<String> arches, String releaseVersion) {
-        for (String apkArch : arches) {
-            for (String supportedArch : supportedABIS) {
-                if (apkArch.equals(supportedArch)) {
-                    if (isDeviceReleaseHigherOrEqualToApkMinRelease(releaseVersion))
-                        return true;
+        if (arches == null || releaseVersion == null)
+            return false;
+
+        if (arches.get(0).equals("noarch") || arches.get(0).equals("universal"))
+            return isDeviceReleaseHigherOrEqualToApkMinRelease(releaseVersion);
+
+        else {
+            for (String apkArch : arches) {
+                for (String supportedArch : supportedABIS) {
+                    if (apkArch.equals(supportedArch)) {
+                        return isDeviceReleaseHigherOrEqualToApkMinRelease(releaseVersion);
+                    }
                 }
             }
         }

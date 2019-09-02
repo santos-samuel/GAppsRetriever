@@ -44,7 +44,9 @@ public class CheckGooglePlayServicesPresenter {
             case ConnectionResult.SERVICE_UPDATING:                 // 18
                 view.showToastMessage("SERVICE_UPDATING");
                 break;
-
+            case ConnectionResult.SUCCESS:                          // 0
+                view.showToastMessage("SUCCESS");
+                break;
             default:
                 // no other possible ConnectionResults
                 break;

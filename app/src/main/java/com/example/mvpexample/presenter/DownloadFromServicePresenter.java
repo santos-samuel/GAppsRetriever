@@ -3,15 +3,12 @@ package com.example.mvpexample.presenter;
 import android.content.pm.PackageManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.example.mvpexample.model.Constants;
 import com.example.mvpexample.model.FragmentNavigator;
 import com.example.mvpexample.model.RequestManager;
-import com.example.mvpexample.view.DownloadFromServiceFragment;
-import com.example.mvpexample.view.SelectAndInspectApkFragment;
+import com.example.mvpexample.view.DownloadPackFragment;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 
 public class DownloadFromServicePresenter {
     private IDownloadFromServiceView view;
@@ -28,7 +25,12 @@ public class DownloadFromServicePresenter {
     public void processInstalledApp(String installedPackageName) {
         Log.d("INSTALLED APP", installedPackageName);
 
-        if (installedPackageName.equals(Constants.GOOGLE_GPS_PACKAGE_NAME)) {
+        if (installedPackageName.equals(Constants.GOOGLE_PLAY_SERVICES_PACKAGE_NAME) ||
+                installedPackageName.equals(Constants.GOOGLE_PLAY_STORE_PACKAGE_NAME) ||
+                installedPackageName.equals(Constants.GOOGLE_ACCOUNT_MANAGER_PACKAGE_NAME) ||
+                installedPackageName.equals(Constants.GOOGLE_SERVICES_FRAMEWORK_PACKAGE_NAME) ||
+                installedPackageName.equals(Constants.GOOGLE_CALENDAR_SYNC_PACKAGE_NAME) ||
+                installedPackageName.equals(Constants.GOOGLE_CONTACT_SYNC_PACKAGE_NAME)) {
             //delete apk file?
             view.finishActivity();
         }
@@ -81,5 +83,10 @@ public class DownloadFromServicePresenter {
 
     public void changeFragment(Fragment newFrag) {
         fragNavigator.navigateTo(newFrag, false);
+    }
+
+    public void downloadGPSAndInstallPack() {
+        fragNavigator.navigateTo(new DownloadPackFragment(), true);
+        //requestManager.getGooglePackFromApkMirror();
     }
 }

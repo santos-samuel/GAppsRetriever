@@ -1,7 +1,6 @@
 package com.example.mvpexample.view;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
@@ -9,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -24,7 +22,6 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1;
     private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 2;
-    private static final int MY_PERMISSIONS_REQUEST_INSTALL_PACKAGES = 3;
 
     private FragmentNavigator fragNavigator;
     private RequestManager requestManager;
@@ -52,18 +49,6 @@ public class MainActivity extends AppCompatActivity {
 
         askForReadExternalStoragePermission();
         askForWriteExternalStoragePermission();
-
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (!getPackageManager().canRequestPackageInstalls()) {
-                startActivityForResult(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).setData(Uri.parse(String.format("package:%s", getPackageName()))), MY_PERMISSIONS_REQUEST_INSTALL_PACKAGES);
-            } else {
-                //callInstallProcess();
-            }
-        } else {
-            //callInstallProcess();
-        }*/
-
-        //askForInstallPackagesPermission();
     }
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
@@ -132,28 +117,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    private void askForInstallPackagesPermission() {
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.REQUEST_INSTALL_PACKAGES)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            // Permission is not granted
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.REQUEST_INSTALL_PACKAGES)) {
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-            } else {
-                // No explanation needed; request the permission
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.REQUEST_INSTALL_PACKAGES},
-                        MY_PERMISSIONS_REQUEST_INSTALL_PACKAGES);
-            }
-        }
-    }
-
     private void init() {
         this.persistentMemory = new PersistentMemory();
         this.requestManager = new RequestManager(persistentMemory, getPackageManager(), getContentResolver(), this);
@@ -181,19 +144,6 @@ public class MainActivity extends AppCompatActivity {
 
             // other 'case' lines to check for other
             // permissions this app might request.
-        }
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == MY_PERMISSIONS_REQUEST_INSTALL_PACKAGES && resultCode == Activity.RESULT_OK) {
-            if (getPackageManager().canRequestPackageInstalls()) {
-                //callInstallProcess();
-            }
-        } else {
-            //give the error
         }
     }
 

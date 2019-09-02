@@ -6,6 +6,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -14,22 +15,29 @@ public class APKMirrorRetriever2 implements IGetRequestInfo {
     private String mError;
     //private static final String DownloadUrl = "https://www.apkmirror.com";
 
-    public APKMirrorRetriever2(DeviceSpecs deviceSpecs, GenericCallback callback) {
+    public APKMirrorRetriever2(DeviceSpecs deviceSpecs, GenericCallback callback, String query, String fileName) {
         Document doc;
         try {
             for (int i = 1; ; i++) { // iterate page
-                doc = Jsoup.connect("https://www.apkmirror.com/uploads/page/"+i+"/?q=google-play-services").get();
-                Elements elements = doc.getElementsByClass("appRowVariantTag wrapText");
+                doc = Jsoup.connect("https://www.apkmirror.com/uploads/page/" + i + query).get();
+                Elements elements = doc.getElementsByClass("appRow");
 
                 if (elements.size() == 0) { // no div with class 'appRowVariantTag wrapText' found (page number exceeded)
                     mError = "No updates found";
                     mResult = RequestStatus.STATUS_OK;
-                    callback.onResult(null, null,this);
+                    callback.onResult(null, null, null, this);
                     return;
                 }
 
-                for (Element e : elements) { // iterate uploads
-                    String releaseLink = e.select("a[href]").first().attr("abs:href");
+                for (Element e1 : elements) { // iterate uploads
+                    Elements devElements = e1.getElementsByClass("byDeveloper block-on-mobile wrapText");
+
+                    if (devElements.size() == 0)
+                        continue; // or return?
+
+                    Elements e2 = e1.getElementsByClass("appRowTitle wrapText marginZero block-on-mobile");
+
+                    String releaseLink = e2.select("a[href]").first().attr("abs:href");
                     System.out.println(releaseLink);
 
                     Object[] o = verifyIfReleaseSuitsDeviceSpecs(releaseLink, deviceSpecs); // either returns download page link or null
@@ -43,15 +51,20 @@ public class APKMirrorRetriever2 implements IGetRequestInfo {
                         String versionName = (String) o[1];
 
                         String downloadLink = getReleaseDownloadLink(releaseDownloadPage);
-                        callback.onResult(downloadLink, versionName, this);
+                        callback.onResult(downloadLink, versionName, fileName, this);
                         return;
                     }
                 }
             }
+        } catch (UnknownHostException e) {
+            // no internet connection
+            mError = e.getMessage();
+            mResult = RequestStatus.STATUS_ERROR;
+            callback.onResult(null, null, fileName, this);
         } catch (IOException e) {
             mError = e.getMessage();
             mResult = RequestStatus.STATUS_ERROR;
-            callback.onResult(null, null, this);
+            callback.onResult(null, null, fileName, this);
         }
     }
 
@@ -73,6 +86,7 @@ public class APKMirrorRetriever2 implements IGetRequestInfo {
 
         for (Element e : elements) { // iterate variants
             Elements variantInfo = e.getElementsByClass("table-cell rowheight addseparator expand pad dowrap");
+
             List<String> archList = parseArchitecture(variantInfo.get(1).text());
             String release = parseReleaseVersion(variantInfo.get(2).text());
 
@@ -101,6 +115,8 @@ public class APKMirrorRetriever2 implements IGetRequestInfo {
     }
 
     private String parseReleaseVersion(String text) { // text = "Android X.Y+"
+        if (!text.contains("."))
+            return null;
         String[] minVersionParsed = text.split("\\s"); // {Android, X.Y+}
         return minVersionParsed[1].substring(0, minVersionParsed[1].length() - 1); // X.Y
     }
