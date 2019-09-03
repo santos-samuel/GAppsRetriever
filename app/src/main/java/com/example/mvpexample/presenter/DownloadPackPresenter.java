@@ -18,7 +18,7 @@ public class DownloadPackPresenter {
         this.requestManager = requestManager;
         this.view = view;
         this.fragNavigator = fragmentNavigator;
-        currentIndexOfAppBeeingInstalled = 0; // DO NOT FORGET TO CHANGE
+        currentIndexOfAppBeeingInstalled = 0;
 
         view.initCheckBoxes();
     }

@@ -99,7 +99,7 @@ public class DownloadFromServiceFragment extends Fragment implements IDownloadFr
         // Add the buttons
         builder.setPositiveButton(R.string.cast_tracks_chooser_dialog_yes, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                presenter.downloadGPSAndInstallPack();
+                presenter.downloadGPSAndInstallPack(getActivity(), getContext().getPackageManager());
             }
         });
 
@@ -112,7 +112,8 @@ public class DownloadFromServiceFragment extends Fragment implements IDownloadFr
         // Set other dialog properties
         builder.setTitle("Alert");
         builder.setMessage("The installed app contains features that may not " +
-                "work without Google Play Services. Do you want Aptoide to make Google Play Services " +
+                "work without Google Play Services.\n" +
+                "Do you want Aptoide to make Google Play Services " +
                 "available on your device?");
 
         builder.setIcon(R.drawable.aptoide_icon);
@@ -126,13 +127,6 @@ public class DownloadFromServiceFragment extends Fragment implements IDownloadFr
             public void onShow(DialogInterface arg0) {
                 dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.rgb(232, 106, 37));
                 dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.rgb(232, 106, 37));
-            }
-        });
-
-        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialogInterface) {
-                finishActivity();
             }
         });
 

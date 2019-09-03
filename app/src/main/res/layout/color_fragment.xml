@@ -25,4 +25,11 @@
         android:layout_height="wrap_content"
         android:text="Go to ApkAnalyzer"
         tools:text="Go to ApkAnalyzer" />
+
+    <Button
+        android:id="@+id/btnIterateSettings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Iterate Settings"
+        tools:text="Go to ApkAnalyzer" />
 </LinearLayout>

@@ -1,7 +1,9 @@
 package com.example.mvpexample.view;
 
+import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -13,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.example.mvpexample.R;
+import com.example.mvpexample.model.Constants;
 import com.example.mvpexample.presenter.ColorPresenter;
 import com.example.mvpexample.presenter.IColorView;
 
@@ -22,6 +25,7 @@ public class ColorFragment extends Fragment implements IColorView {
     private Button btnChangeColor;
     private Button btnChangeFrag;
     private Button btnGoToApkAnalyzer;
+    private Button btnIterateSettings;
 
     @Nullable
     @Override
@@ -38,6 +42,7 @@ public class ColorFragment extends Fragment implements IColorView {
         btnChangeColor = view.findViewById(R.id.btnChangeColor);
         btnChangeFrag = view.findViewById(R.id.btnChangeFrag);
         btnGoToApkAnalyzer = view.findViewById(R.id.btnGoToApkAnalyzer);
+        btnIterateSettings = view.findViewById(R.id.btnIterateSettings);
 
         restoreColor();
 
@@ -75,6 +80,52 @@ public class ColorFragment extends Fragment implements IColorView {
             }
         };
         btnGoToApkAnalyzer.setOnClickListener(goToApkAnalyzerListener);
+
+        View.OnClickListener iterateSettingsListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Uri packageURI;
+                Intent intent;
+
+                try {
+                    packageURI = Uri.parse("package:" + Constants.GOOGLE_PLAY_STORE_PACKAGE_NAME);
+                    intent = new Intent("android.settings.APPLICATION_DETAILS_SETTINGS", packageURI);
+                    startActivity(intent);
+                }catch (Exception ignored) {}
+
+                try {
+                    packageURI = Uri.parse("package:" + Constants.GOOGLE_PLAY_SERVICES_PACKAGE_NAME);
+                    intent = new Intent("android.settings.APPLICATION_DETAILS_SETTINGS", packageURI);
+                    startActivity(intent);
+                }catch (Exception ignored) {}
+
+                try {
+                    packageURI = Uri.parse("package:" + Constants.GOOGLE_SERVICES_FRAMEWORK_PACKAGE_NAME);
+                    intent = new Intent("android.settings.APPLICATION_DETAILS_SETTINGS", packageURI);
+                    startActivity(intent);
+                }catch (Exception ignored) {}
+
+
+                try {
+                    packageURI = Uri.parse("package:" + Constants.GOOGLE_ACCOUNT_MANAGER_PACKAGE_NAME);
+                    intent = new Intent("android.settings.APPLICATION_DETAILS_SETTINGS", packageURI);
+                    startActivity(intent);
+                }catch (Exception ignored) {}
+
+                try {
+                    packageURI = Uri.parse("package:" + Constants.GOOGLE_CALENDAR_SYNC_PACKAGE_NAME);
+                    intent = new Intent("android.settings.APPLICATION_DETAILS_SETTINGS", packageURI);
+                    startActivity(intent);
+                }catch (Exception ignored) {}
+
+                try {
+                    packageURI = Uri.parse("package:" + Constants.GOOGLE_CONTACT_SYNC_PACKAGE_NAME);
+                    intent = new Intent("android.settings.APPLICATION_DETAILS_SETTINGS", packageURI);
+                    startActivity(intent);
+                }catch (Exception ignored) {}
+            }
+        };
+        btnIterateSettings.setOnClickListener(iterateSettingsListener);
     }
 
     private void restoreColor() {

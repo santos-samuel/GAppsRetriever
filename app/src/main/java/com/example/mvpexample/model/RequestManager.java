@@ -212,7 +212,7 @@ public class RequestManager {
             return true;
 
 
-        // GOOGLE PLAY GAMES SERVICE (maybe notify about needing both services)
+        // GOOGLE PLAY GAMES SERVICE (maybe notify if he wants Google Play Games?)
         object = metaData.get("com.google.android.gms.games.APP_ID");
         if (object != null)
             return true;

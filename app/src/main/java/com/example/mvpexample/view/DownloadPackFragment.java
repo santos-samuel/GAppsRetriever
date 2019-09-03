@@ -86,7 +86,7 @@ public class DownloadPackFragment extends Fragment implements IDownloadPackView 
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setDataAndType(apkUri, "application/vnd.android.package-archive");
                 //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivityForResult(intent, 51);
+                startActivityForResult(intent, Constants.INSTALL_REQUEST_CODE);
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());

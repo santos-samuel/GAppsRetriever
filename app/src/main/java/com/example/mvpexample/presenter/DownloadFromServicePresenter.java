@@ -1,7 +1,9 @@
 package com.example.mvpexample.presenter;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
 import com.example.mvpexample.model.Constants;
@@ -85,8 +87,11 @@ public class DownloadFromServicePresenter {
         fragNavigator.navigateTo(newFrag, false);
     }
 
-    public void downloadGPSAndInstallPack() {
-        fragNavigator.navigateTo(new DownloadPackFragment(), true);
-        //requestManager.getGooglePackFromApkMirror();
+    public void downloadGPSAndInstallPack(FragmentActivity activity, PackageManager packageManager) {
+        Intent launchIntent = packageManager.getLaunchIntentForPackage("com.example.mvpexample");
+        if (launchIntent != null) {
+            launchIntent.putExtra("fromService", "true");
+            activity.startActivity(launchIntent);//null pointer check in case package name was not found
+        }
     }
 }

@@ -5,15 +5,18 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import com.example.mvpexample.R;
 import com.example.mvpexample.model.AppListenerService;
+import com.example.mvpexample.model.Constants;
 import com.example.mvpexample.model.FragmentNavigator;
 import com.example.mvpexample.model.PersistentMemory;
 import com.example.mvpexample.model.RequestManager;
@@ -35,7 +38,17 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        init();
+        Bundle extras = getIntent().getExtras();
+
+        if (extras != null) {
+            Object fromService1 = extras.get("fromService");
+            if (fromService1 != null)
+                init(new DownloadPackFragment());
+            else
+                init(new ColorFragment());
+        }
+        else
+            init(new ColorFragment());
 
        appListenerService = new AppListenerService();
         appListenerIntent = new Intent(this, appListenerService.getClass());
@@ -117,11 +130,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void init() {
+    private void init(Fragment frag) {
         this.persistentMemory = new PersistentMemory();
         this.requestManager = new RequestManager(persistentMemory, getPackageManager(), getContentResolver(), this);
         this.fragNavigator = new FragmentNavigator(this); // init navigator with main activity
-        this.fragNavigator.navigateTo(new ColorFragment(), true);
+        this.fragNavigator.navigateTo(frag, true);
     }
 
     @Override
