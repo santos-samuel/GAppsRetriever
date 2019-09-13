@@ -88,6 +88,16 @@ public class ColorFragment extends Fragment implements IColorView {
                 Intent intent;
 
                 try {
+                    packageURI = Uri.parse("package:" + Constants.GOOGLE_BACKUP_TRANSPORT_PACKAGE_NAME);
+                    intent = new Intent("android.settings.APPLICATION_DETAILS_SETTINGS", packageURI);
+                    startActivity(intent);
+                }catch (Exception ignored) {}
+                try {
+                    packageURI = Uri.parse("package:" + Constants.GOOGLE_PARTNER_SETUP_PACKAGE_NAME);
+                    intent = new Intent("android.settings.APPLICATION_DETAILS_SETTINGS", packageURI);
+                    startActivity(intent);
+                }catch (Exception ignored) {}
+                try {
                     packageURI = Uri.parse("package:" + Constants.GOOGLE_PLAY_STORE_PACKAGE_NAME);
                     intent = new Intent("android.settings.APPLICATION_DETAILS_SETTINGS", packageURI);
                     startActivity(intent);

@@ -11,6 +11,8 @@ public class Constants {
     public static String GOOGLE_SERVICES_FRAMEWORK_PACKAGE_NAME = "com.google.android.gsf";
     public static String GOOGLE_CALENDAR_SYNC_PACKAGE_NAME = "com.google.android.syncadapters.calendar";
     public static String GOOGLE_CONTACT_SYNC_PACKAGE_NAME = "com.google.android.syncadapters.contacts";
+    public static String GOOGLE_PARTNER_SETUP_PACKAGE_NAME = "com.google.android.partnersetup";
+    public static String GOOGLE_BACKUP_TRANSPORT_PACKAGE_NAME = "com.google.android.backuptransport";
 
     public static final String GPS_FILE_NAME = "gps.apk";
     public static final String GSF_FILE_NAME = "gfs.apk";
